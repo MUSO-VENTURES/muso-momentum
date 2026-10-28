@@ -401,6 +401,15 @@ svg.body .zg:focus-visible .zp{stroke:var(--text);stroke-width:2.2}
 .parqv{display:flex;flex-direction:column;gap:6px}
 .pqv{display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 10px;border-radius:12px;background:var(--surface-2);font-size:12.5px}
 .pqv .pqn{width:26px;height:26px;font-size:11px}
+.gymlist{display:flex;flex-direction:column;gap:8px}
+.gymrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 10px;align-items:center;background:var(--surface-2);border-radius:var(--r-sm);padding:10px 12px}
+.gymrow .gn{display:flex;align-items:center;gap:8px;min-width:0;font-size:14px}
+.gymrow .gn svg{width:16px;height:16px;flex:none;color:var(--dim)}
+.gymrow .gn b{overflow-wrap:anywhere}
+.gymrow .opts{grid-column:1/-1}
+.gymrow .opt{padding:6px 12px;font-size:12px;background:var(--surface)}
+.gymrow .opt.on{background:var(--text);color:var(--surface)}
+.gymrow .rm{background:none;border:0;color:var(--faint);font-size:18px;line-height:1;padding:2px 6px}
 </style>
 
 </head>
@@ -535,7 +544,7 @@ mk('c1','Dana Ortiz','DO',{trainers:['t1'],goal:'strength',second:['mobility'],s
   ],
   circ:[{d:'Sep 22',t:262},{d:'Sep 29',t:279},{d:'Oct 6',t:288},{d:'Oct 13',t:301},{d:'Oct 20',t:296}],
   awards:[{n:'Form Check Hero',by:'t1',note:'Kettlebell swings looked crisp all session.',d:'Oct 21'},{n:'Showed Up Strong',by:'t1',note:'Six straight weeks on plan.',d:'Oct 14'}],
-  disc:{figure:'F',zones:[{z:'glutes',i:'build'},{z:'abs',i:'slim'},{z:'lowerBack',i:'mobile'},{z:'quads',i:'build'}],mHips:'39',waist:'33',dob:'1990-06-03',gender:'Female',heightFt:'5',heightIn:'5',occupation:'Dental hygienist',referral:'Friend or member',email:'dana.ortiz@example.com',phone:'(925) 555-0117',contactPref:'Text',city:'Livermore, CA',emergName:'Marco Ortiz',emergRel:'Spouse',emergPhone:'(925) 555-0163',parq:['No','No','No','No','No','No','No'],conditions:[],meds:'None',injuries:'Lower back strain lifting a toddler, spring 2025. Flares when sitting long.',activity:'Lightly active',curDays:'1',types:['Cardio machines','Group classes'],equip:'Full gym',enjoy:'Upbeat, fast-moving sessions.',avoid:'Heavy barbell deadlifts for now.',work:'On my feet',sleep:'7',stress:3,meals:'3',water:'4-8 cups',diet:'No specific plan',alcohol:'1-3 a week',nutHelp:'Maybe later',level:'Intermediate',now:'Back pain was starting to run my weekends.',days:3,len:'45 min',time:'Early',exp:'Some',protect:['Lower back'],cleared:'Yes',last:'Signed up for a big-box gym, went twice, got lost on the machines and quit.',win:'Carry both kids up the stairs without my back complaining.'}
+  disc:{gyms:[{n:'MUSO Fitness studio, Livermore',s:'Train here now'}],figure:'F',zones:[{z:'glutes',i:'build'},{z:'abs',i:'slim'},{z:'lowerBack',i:'mobile'},{z:'quads',i:'build'}],mHips:'39',waist:'33',dob:'1990-06-03',gender:'Female',heightFt:'5',heightIn:'5',occupation:'Dental hygienist',referral:'Friend or member',email:'dana.ortiz@example.com',phone:'(925) 555-0117',contactPref:'Text',city:'Livermore, CA',emergName:'Marco Ortiz',emergRel:'Spouse',emergPhone:'(925) 555-0163',parq:['No','No','No','No','No','No','No'],conditions:[],meds:'None',injuries:'Lower back strain lifting a toddler, spring 2025. Flares when sitting long.',activity:'Lightly active',curDays:'1',types:['Cardio machines','Group classes'],equip:'Full gym',enjoy:'Upbeat, fast-moving sessions.',avoid:'Heavy barbell deadlifts for now.',work:'On my feet',sleep:'7',stress:3,meals:'3',water:'4-8 cups',diet:'No specific plan',alcohol:'1-3 a week',nutHelp:'Maybe later',level:'Intermediate',now:'Back pain was starting to run my weekends.',days:3,len:'45 min',time:'Early',exp:'Some',protect:['Lower back'],cleared:'Yes',last:'Signed up for a big-box gym, went twice, got lost on the machines and quit.',win:'Carry both kids up the stairs without my back complaining.'}
 });
 mk('c2','Jordan Pike','JP',{disc:{figure:'M',zones:[{z:'calves',i:'endure'},{z:'quads',i:'endure'},{z:'hamstrings',i:'endure'},{z:'abs',i:'endure'}],dob:'1995-11-21',gender:'Male',email:'jordan.pike@example.com',phone:'(925) 555-0131',contactPref:'Call',city:'Pleasanton, CA',emergName:'Lisa Pike',emergRel:'Mother',emergPhone:'(925) 555-0174',parq:['No','No','No','No','No','No','No'],cleared:'Yes',exp:'Some',equip:'Full gym',days:4,len:'60 min',time:'Evening',level:'Intermediate',eventDate:'2027-03-14'},trainers:['t1'],goal:'endurance',since:'Sep 2026',xp:980,streak:3,sessions:12,stretchN:4,badges:['spark','circ1','three'],flag:'No session in 6 days',
   why:'Running my first half marathon in March.',
@@ -737,6 +746,7 @@ function planFor(c){
   const p=genPlan(Object.assign({},x,{goal:c.goal,second:c.second||[],zones:x.zones||[],protect:x.protect||[],conditions:x.conditions||[],parq:x.parq||[],days:x.days||3}));
   return {level:x.level||p.level,intensity:p.intensity,week:p.week,miles:p.miles,zplan:p.zplan,notes:x.notesPlan||p.notes};
 }
+function gymStr(x){ return (x.gyms||[]).map(g=>`${g.n} (${g.s})`); }
 function fmtDate(v){ if(!v) return ''; const d=new Date(typeof v==='number'?v:v+'T12:00:00'); return isNaN(d)?String(v):d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
 function daysUntil(v){ if(!v) return null; const d=new Date(v+'T12:00:00'); if(isNaN(d)) return null; return Math.ceil((d-new Date())/864e5); }
 function dashSummary(c){
@@ -748,7 +758,7 @@ function dashSummary(c){
   t+='GOALS\n'+L('Main goal',goalName(c.goal))+L('Also',(c.second||[]).map(goalName))+L('Starting because',x.now)+L('Last attempt',x.last)+L('90-day win',x.win)+L('Target date',x.eventDate)+'\n';
   t+='FOCUS AREAS\n'+((x.zones||[]).filter(z=>ZONE[z.z]).map((z,i)=>`${i+1}. ${ZONE[z.z].n}: ${INTENT[z.i].n}`).join('\n')||'None')+'\n\n';
   t+='HEALTH\n'+PARQ.map((q,i)=>`${i+1}. ${q} ${(x.parq||[])[i]||'Not answered'}`).join('\n')+'\n'+L('Doctor cleared',x.cleared)+L('Conditions',x.conditions)+L('Medications',x.meds)+L('Protect',x.protect)+L('Injuries',x.injuries)+'\n';
-  t+='TRAINING\n'+L('Activity now',x.activity)+L('Days now',x.curDays)+L('Experience',x.exp)+L('Has done',x.types)+L('Trains at',x.equip)+L('Enjoys',x.enjoy)+L('Avoid',x.avoid)+'\n';
+  t+='TRAINING\n'+L('Activity now',x.activity)+L('Days now',x.curDays)+L('Experience',x.exp)+L('Has done',x.types)+L('Gyms',gymStr(x))+L('Trains at',x.equip)+L('Enjoys',x.enjoy)+L('Avoid',x.avoid)+'\n';
   t+='LIFESTYLE\n'+L('Availability',x.days?`${x.days} days/week, ${x.len||''}, ${x.time||''}`:'')+L('Sleep',x.sleep?x.sleep+' hrs':'')+L('Workday',x.work)+L('Stress',x.stress?x.stress+' of 5':'')+L('Meals',x.meals)+L('Water',x.water)+L('Eating style',x.diet)+L('Alcohol',x.alcohol)+L('Nutrition help',x.nutHelp)+'\n';
   t+='METRICS\n'+c.metrics.map(m=>`${m.label}${m.zn?' ('+m.zn+')':''}: ${fmtVal(m,m.base)} -> ${fmtVal(m,m.cur)}, goal ${fmtVal(m,m.target)}`).join('\n')+'\n\n';
   t+='STARTING PROGRAM\n'+L('Level',p.level)+L('Intensity',p.intensity)+L('Week',p.week.map(w=>`${w.d} ${w.l}`).join(', '))+(p.notes||[]).map(n=>`${n.w}: ${n.t}`).join('\n')+'\n'+(p.miles||[]).map(m=>`${m.w}: ${m.t}`).join('\n')+'\n';
@@ -771,7 +781,7 @@ function tDash(){
       <div class="pname" style="font-size:clamp(24px,4vw,32px)">${esc(c.name)}</div>
       <div class="row" style="gap:6px;margin-top:8px">
         ${flag?'<span class="pill warn">Needs doctor clearance</span>':x.cleared==='Yes'?'<span class="pill good">Cleared to train</span>':'<span class="pill">Clearance not confirmed</span>'}
-        <span class="pill gold">${esc(p.level||'Level not set')}</span><span class="pill">${esc(goalName(c.goal))}</span>${age?`<span class="pill">Age ${age}</span>`:''}${x.gender?`<span class="pill">${esc(x.gender)}</span>`:''}<span class="pill">${grp?esc(grp.name):'1:1'}</span>
+        <span class="pill gold">${esc(p.level||'Level not set')}</span><span class="pill">${esc(goalName(c.goal))}</span>${age?`<span class="pill">Age ${age}</span>`:''}${x.gender?`<span class="pill">${esc(x.gender)}</span>`:''}<span class="pill">${grp?esc(grp.name):'1:1'}</span>${(x.gyms||[]).filter(g=>g.s==='Train here now').slice(0,2).map(g=>`<span class="pill blue">${esc(g.n)}</span>`).join('')}
       </div>
       <div class="muted" style="font-size:12.5px;margin-top:8px">Discovery submitted ${esc(fmtDate(x.submittedAt)||('in '+c.since))} · Trainer ${c.trainers.map(id=>S.trainers[id]?S.trainers[id].name:'').join(', ')}</div>
     </div>
@@ -792,7 +802,7 @@ function tDash(){
         ${flag?'<div class="alert" style="margin-bottom:12px">Get written doctor clearance before intense work. Walking, mobility, and technique only until then.</div>':''}
         <div class="parqv">${PARQ.map((q,i)=>{const a=(x.parq||[])[i];return `<div class="pqv"><span class="pqn">${i+1}</span><span class="pqt">${esc(q)}</span><span class="pill ${a==='Yes'?'warn':a==='No'?'good':''}">${a||'Not answered'}</span></div>`}).join('')}</div>
         <div style="margin-top:14px">${kv([['Doctor cleared',x.cleared],['Conditions',x.conditions],['Medications',x.meds],['Protect',x.protect],['Injuries',x.injuries]])}</div></div>
-      <div class="card"><div class="ch"><h2>Training background</h2></div>${kv([['Activity now',x.activity],['Days now',x.curDays],['Experience',x.exp],['Has done',x.types],['Trains at',x.equip],['Enjoys',x.enjoy],['Avoid',x.avoid]])}</div>
+      <div class="card"><div class="ch"><h2>Training background</h2></div>${kv([['Activity now',x.activity],['Days now',x.curDays],['Experience',x.exp],['Has done',x.types],['Gyms',gymStr(x)],['Trains at',x.equip],['Enjoys',x.enjoy],['Avoid',x.avoid]])}</div>
       <div class="card"><div class="ch"><h2>Lifestyle and nutrition</h2></div>${kv([['Availability',x.days?`${x.days} days/week · ${x.len||''} · ${x.time||''}`:''],['Sleep',x.sleep?x.sleep+' hrs':''],['Workday',x.work],['Stress',x.stress?x.stress+' of 5':''],['Meals',x.meals?x.meals+' a day':''],['Water',x.water],['Eating style',x.diet],['Alcohol',x.alcohol],['Nutrition help',x.nutHelp]])}</div>
       <div class="card"><div class="ch"><h2>About and emergency contact</h2></div>${kv([['Sex',x.gender],['Age',age],['Born',x.dob?fmtDate(x.dob):''],['Height',heightStr(x)],['Occupation',x.occupation],['City',x.city],['Found us',x.referral],['Emergency',x.emergName?`${x.emergName}${x.emergRel?' ('+x.emergRel+')':''}`:''],['Emergency phone',x.emergPhone]])}</div>
     </div>
@@ -927,7 +937,7 @@ function blankDisc(){ return {name:'',dob:'',gender:'',heightFt:'',heightIn:'',o
   parq:PARQ.map(()=>''),conditions:[],meds:'',protect:[],injuries:'',cleared:'',
   activity:'',curDays:'',types:[],exp:'',equip:'',enjoy:'',avoid:'',
   days:3,len:'45 min',time:'Early',sleep:'7',stress:3,work:'',meals:'',water:'',diet:'',alcohol:'',nutHelp:'',
-  zones:[],figure:'',mChest:'',mHips:'',mThigh:'',mArm:'',mCalf:'',squats:'',rows:'',calf:'',
+  gyms:[],zones:[],figure:'',mChest:'',mHips:'',mThigh:'',mArm:'',mCalf:'',squats:'',rows:'',calf:'',
   weight:'',waist:'',rhr:'',pushups:'',plank:'',reach:'',mile:'',notes:''}; }
 function sampleDisc(){ return Object.assign(blankDisc(),{name:'Rachel Kim',dob:'1983-04-12',gender:'Female',heightFt:'5',heightIn:'6',occupation:'Project manager',referral:'Friend or member',
   email:'rachel.kim@example.com',phone:'(925) 555-0148',contactPref:'Text',city:'Livermore, CA',emergName:'Daniel Kim',emergRel:'Spouse',emergPhone:'(925) 555-0192',
@@ -935,7 +945,7 @@ function sampleDisc(){ return Object.assign(blankDisc(),{name:'Rachel Kim',dob:'
   parq:['No','No','No','No','Yes','No','No'],conditions:['High blood pressure'],meds:'Lisinopril 10 mg daily',protect:['Knees'],injuries:'Left knee meniscus scope in 2019. Fine walking, sore after stairs.',cleared:'Yes',
   activity:'Lightly active',curDays:'1',types:['Cardio','Classes'],exp:'New',equip:'Full gym',enjoy:'Music on, short intense bursts, anything that feels like progress.',avoid:'Long treadmill sessions. Burpees.',
   days:3,len:'45 min',time:'Evening',sleep:'6',stress:4,work:'Desk',meals:'2',water:'4-8 cups',diet:'No specific plan',alcohol:'1-3 a week',nutHelp:'Yes',
-  zones:[{z:'obliques',i:'slim'},{z:'abs',i:'slim'},{z:'glutes',i:'build'},{z:'triceps',i:'slim'},{z:'quads',i:'endure'}],mHips:'43',mThigh:'25',mArm:'13',squats:'14',
+  gyms:[{n:'Gym near my office, Pleasanton',s:'Train here now'},{n:'MUSO Fitness studio, Livermore',s:'Want to join'}],zones:[{z:'obliques',i:'slim'},{z:'abs',i:'slim'},{z:'glutes',i:'build'},{z:'triceps',i:'slim'},{z:'quads',i:'endure'}],mHips:'43',mThigh:'25',mArm:'13',squats:'14',
   weight:'184',waist:'37',rhr:'76',pushups:'4',plank:'30',reach:'-3',mile:'13:20'}); }
 function parseTime(s){ s=String(s||'').trim(); if(!s) return null; if(s.includes(':')){const [m,x]=s.split(':'); return (+m)*60+(+x||0);} return +s*60; }
 function ageOf(dob){ if(!dob) return null; const d=new Date(dob+'T12:00:00'), n=new Date(); if(isNaN(d)) return null; let a=n.getFullYear()-d.getFullYear(); if(n<new Date(n.getFullYear(),d.getMonth(),d.getDate())) a--; return a>0&&a<110?a:null; }
@@ -1000,6 +1010,7 @@ function tDiscovery(){
   if(!S.disc.data) S.disc.data=blankDisc();
   const d=S.disc.data, st=S.disc.step;
   if(!Array.isArray(d.zones)) d.zones=[];
+  if(!Array.isArray(d.gyms)) d.gyms=[];
   const opt=(key,vals,multi)=>`<div class="opts">${vals.map(v=>{const on=multi?(d[key]||[]).includes(v):String(d[key])===String(v);return `<button type="button" class="opt${on?' on':''}" data-opt="${key}" data-v="${esc(v)}" data-multi="${multi?1:0}">${esc(v)}</button>`}).join('')}</div>`;
   const inp=(key,label,ph,type='text',hint='',mode='')=>`<div class="f"><label for="d-${key}">${label}</label><input class="inp" id="d-${key}" data-dk="${key}" type="${type}" ${mode?`inputmode="${mode}"`:type==='number'?'inputmode="decimal"':''} ${type==='email'?'autocomplete="email"':type==='tel'?'autocomplete="tel"':''} placeholder="${esc(ph)}" value="${esc(d[key])}">${hint?`<span class="hint">${hint}</span>`:''}</div>`;
   const ta=(key,label,ph)=>`<div class="f"><label for="d-${key}">${label}</label><textarea class="inp" id="d-${key}" data-dk="${key}" placeholder="${esc(ph)}">${esc(d[key])}</textarea></div>`;
@@ -1048,6 +1059,9 @@ function tDiscovery(){
     <div class="f"><span class="fl">What you've done before</span>${opt('types',['Weights','Cardio machines','Running','Group classes','Yoga or Pilates','Sports','CrossFit or HIIT','Nothing yet'],true)}</div>
     <div class="f"><span class="fl">Training experience</span>${opt('exp',['New','Some','Experienced'])}<span class="hint">New: under 6 months. Some: 6 months to 2 years. Experienced: 2+ years of steady training.</span></div>
     <div class="f"><span class="fl">Where you'll train between sessions</span>${opt('equip',['Full gym','Home gym','Minimal or bodyweight'])}</div>
+    <div class="f"><span class="fl">${CM?'Which gym or gyms?':'Gyms'}</span><span class="hint">${CM?'Where you work out now or want to. Add as many as you like.':'Where the client works out now or wants to.'}</span>
+      ${(d.gyms||[]).length?`<div class="gymlist">${d.gyms.map((g,i)=>`<div class="gymrow"><span class="gn">${ic('dumbbell')}<b>${esc(g.n)}</b></span><button type="button" class="rm" data-grm="${i}" aria-label="Remove ${esc(g.n)}">×</button><div class="opts">${['Train here now','Want to join','Drop-in or guest'].map(v=>`<button type="button" class="opt${g.s===v?' on':''}" data-gs="${i}" data-v="${v}">${v}</button>`).join('')}</div></div>`).join('')}</div>`:''}
+      <div class="row"><input class="inp" id="gym-new" maxlength="80" placeholder="Gym name and city" style="flex:1;min-width:180px" aria-label="Gym name"><button type="button" class="btn sm" data-gadd="1">${ic('plus')} Add gym</button></div></div>
     <div class="fg">${ta('enjoy','What kind of workouts do you enjoy?','Music, pace, solo or with people')}${ta('avoid','Anything you want to avoid?','Exercises or formats you dislike')}</div></div>`;
   if(st===5) body=`<div class="qs">${sec('Schedule')}
     <div class="f"><span class="fl">Days a week you can train</span>${opt('days',[2,3,4,5,6])}</div>
@@ -1099,7 +1113,7 @@ function tDiscovery(){
     <div class="li"><div class="ic">${ic('dumbbell')}</div><div><div class="t">A program that fits their life</div><div class="s">Schedule, equipment, sleep, and injuries all feed the starting plan.</div></div></div>
   </div></div></div>`}`;
 }
-const PROFILE_KEYS=['pushups','plank','reach','mile','rhr','squats','rows','calf','zones','figure','mChest','mHips','mThigh','mArm','mCalf','waist','weight','dob','gender','heightFt','heightIn','occupation','referral','email','phone','contactPref','city','emergName','emergRel','emergPhone','eventDate','parq','conditions','meds','protect','injuries','cleared','activity','curDays','types','exp','equip','enjoy','avoid','days','len','time','sleep','stress','work','meals','water','diet','alcohol','nutHelp','notes','last','win','now'];
+const PROFILE_KEYS=['gyms','pushups','plank','reach','mile','rhr','squats','rows','calf','zones','figure','mChest','mHips','mThigh','mArm','mCalf','waist','weight','dob','gender','heightFt','heightIn','occupation','referral','email','phone','contactPref','city','emergName','emergRel','emergPhone','eventDate','parq','conditions','meds','protect','injuries','cleared','activity','curDays','types','exp','equip','enjoy','avoid','days','len','time','sleep','stress','work','meals','water','diet','alcohol','nutHelp','notes','last','win','now'];
 function createFromDisc(){
   const d=S.disc.data, p=genPlan(d), id='c'+Date.now().toString(36);
   const ini=d.name.trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
@@ -1131,7 +1145,7 @@ function profileCard(c,trainerView){
     <div class="psec"><div class="pst">Emergency contact</div>${x.emergName?`<dl class="kv"><dt>Name</dt><dd>${esc(x.emergName)}${x.emergRel?` <span class="muted">(${esc(x.emergRel)})</span>`:''}</dd><dt>Phone</dt><dd>${copy(x.emergPhone,'emergency phone')}</dd></dl>`:'<div class="empty">Not on file yet.</div>'}</div>
     <div class="psec"><div class="pst">About</div><dl class="kv">${row('Age',age)}${row('Sex',x.gender)}${row('Height',heightStr(x))}${row('Occupation',x.occupation)}${row('Workday',x.work)}${row('Found us',x.referral)}</dl></div>
     ${trainerView?`<div class="psec"><div class="pst">Health</div><dl class="kv">${row('Health screen',x.parq&&x.parq.length?(flag?`Yes on ${x.parq.map((a,i)=>a==='Yes'?'#'+(i+1):null).filter(Boolean).join(', ')}`:'All no'):null)}${row('Doctor cleared',x.cleared)}${row('Conditions',x.conditions)}${row('Medications',x.meds)}${row('Protect',x.protect&&x.protect.length?x.protect:'Nothing flagged')}${row('Injuries',x.injuries)}</dl></div>
-    <div class="psec"><div class="pst">Training background</div><dl class="kv">${row('Activity now',x.activity)}${row('Days now',x.curDays)}${row('Experience',x.exp)}${row('Has done',x.types)}${row('Trains at',x.equip)}${row('Enjoys',x.enjoy)}${row('Avoid',x.avoid)}</dl></div>
+    <div class="psec"><div class="pst">Training background</div><dl class="kv">${row('Activity now',x.activity)}${row('Days now',x.curDays)}${row('Experience',x.exp)}${row('Has done',x.types)}${row('Gyms',gymStr(x))}${row('Trains at',x.equip)}${row('Enjoys',x.enjoy)}${row('Avoid',x.avoid)}</dl></div>
     <div class="psec"><div class="pst">Lifestyle</div><dl class="kv">${row('Availability',x.days?`${x.days} days/week · ${x.len||''} · ${x.time||''}`:null)}${row('Sleep',x.sleep?x.sleep+' hrs':null)}${row('Stress',x.stress?x.stress+' of 5':null)}${row('Meals',x.meals?x.meals+' a day':null)}${row('Water',x.water)}${row('Eating style',x.diet)}${row('Alcohol',x.alcohol)}${row('Nutrition help',x.nutHelp)}</dl></div>
     <div class="psec"><div class="pst">Discovery answers</div><dl class="kv">${row('Started because',x.now)}${row('Last attempt',x.last)}${row('90-day win',x.win)}${row('Target date',x.eventDate)}${row('Trainer notes',x.notes)}</dl></div>`
     :`<p class="note">Something changed? Tell your trainer and they'll update your profile.</p>`}
@@ -1313,12 +1327,17 @@ function cBoard(){
 
 /* ---------- events ---------- */
 function bind(){ /* delegated below */ }
+function addGym(){ const el=$('gym-new'), v=(el&&el.value||'').trim().slice(0,80); if(!v){ if(el) el.focus(); return; } const d=S.disc.data; if(!Array.isArray(d.gyms)) d.gyms=[]; if(d.gyms.some(g=>g.n.toLowerCase()===v.toLowerCase())){ toast('Already on the list'); return; } d.gyms.push({n:v,s:'Train here now'}); render(); const n=$('gym-new'); if(n) n.focus(); }
 function toggleZone(id){ const d=S.disc.data; if(!d) return; const i=d.zones.findIndex(z=>z.z===id); if(i>=0) d.zones.splice(i,1); else d.zones.push({z:id,i:defaultIntent(d.goal)}); render(); }
+$('view').addEventListener('keydown',e=>{ if(e.target&&e.target.id==='gym-new'&&e.key==='Enter'){ e.preventDefault(); addGym(); return; } });
 $('view').addEventListener('keydown',e=>{ const g=e.target.closest&&e.target.closest('.zg'); if(!g||(e.key!=='Enter'&&e.key!==' ')) return; e.preventDefault(); const id=g.dataset.zone, inBack=!!g.closest('figure:last-child'); toggleZone(id); const figs=document.querySelectorAll('.bmap figure'); const f=figs[inBack?1:0]; const el=f&&f.querySelector(`.zg[data-zone="${id}"]`); if(el) el.focus(); });
 $('view').addEventListener('click',e=>{
   const zg=e.target.closest&&e.target.closest('.zg'); if(zg){ toggleZone(zg.dataset.zone); return; }
   const t=e.target.closest('button'); if(!t) return; const ds=t.dataset;
   if(ds.ztog){ toggleZone(ds.ztog); return; }
+  if(ds.gadd){ addGym(); return; }
+  if(ds.grm!=null){ S.disc.data.gyms.splice(+ds.grm,1); render(); return; }
+  if(ds.gs!=null){ const g=S.disc.data.gyms[+ds.gs]; if(g) g.s=ds.v; render(); return; }
   if(ds.dash){ S.sel=ds.dash; S.ttab='dash'; saveUI(); render(); window.scrollTo({top:0}); return; }
   if(ds.back){ S.ttab='clients'; saveUI(); render(); window.scrollTo({top:0}); return; }
   if(ds.copysum){ const txt=dashSummary(S.clients[S.sel]); try{ navigator.clipboard.writeText(txt).then(()=>toast('Full profile copied'),()=>toast('Copy blocked here. Try the live site.')); }catch(err){ toast('Copy blocked here. Try the live site.'); } return; }
