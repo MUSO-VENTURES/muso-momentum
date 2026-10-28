@@ -390,6 +390,7 @@ svg.body .zg:focus-visible .zp{stroke:var(--text);stroke-width:2.2}
 .empty-z{background:var(--surface-2);border-radius:var(--r-sm);padding:14px;color:var(--faint);font-size:13px}
 .ztgl{display:flex;flex-wrap:wrap;gap:6px}
 .ztgl .opt{padding:7px 12px;font-size:12.5px}
+.focusbox{border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);padding-block:20px}
 </style>
 
 </head>
@@ -547,7 +548,7 @@ S.clients.c5.flag=null;
 
 /* per-viewer convenience only: remember role and tab */
 S.role='client'; S.onboarded=false; S.started=false;
-try{ const p=JSON.parse(localStorage.getItem('muso-momentum')||'null'); if(p&&p.v===3){ ['clients','lb','circuit','stretch','onboarded','started','me','sel','role','ttab','ctab','trainerId','disc'].forEach(k=>{ if(p[k]!==undefined) S[k]=p[k]; }); if(!S.clients[S.me]) S.me=Object.keys(S.clients)[0]; } }catch(e){}
+try{ const p=JSON.parse(localStorage.getItem('muso-momentum')||'null'); if(p&&p.v===4){ ['clients','lb','circuit','stretch','onboarded','started','me','sel','role','ttab','ctab','trainerId','disc'].forEach(k=>{ if(p[k]!==undefined) S[k]=p[k]; }); if(!S.clients[S.me]) S.me=Object.keys(S.clients)[0]; } }catch(e){}
 function saveUI(){ persist(); }
 
 /* ---------- feedback ---------- */
@@ -663,7 +664,7 @@ function cWelcome(){
 }
 function resetLine(){ return `<p class="resetline">Test build · <button type="button" data-reset="1">Reset test data</button>${S.role==='client'&&S.onboarded?' · <button type="button" data-newclient="1">Start as a new client</button>':''}</p>`; }
 function onboarding(){ return S.role==='client'&&!S.onboarded; }
-function persist(){ try{ const keep={v:3,clients:S.clients,lb:S.lb,circuit:S.circuit,stretch:S.stretch,onboarded:!!S.onboarded,started:!!S.started,me:S.me,sel:S.sel,role:S.role,ttab:S.ttab,ctab:S.ctab,trainerId:S.trainerId,disc:S.disc};
+function persist(){ try{ const keep={v:4,clients:S.clients,lb:S.lb,circuit:S.circuit,stretch:S.stretch,onboarded:!!S.onboarded,started:!!S.started,me:S.me,sel:S.sel,role:S.role,ttab:S.ttab,ctab:S.ctab,trainerId:S.trainerId,disc:S.disc};
   localStorage.setItem('muso-momentum',JSON.stringify(keep,(k,v)=>k==='_fresh'?undefined:v)); }catch(e){} }
 function render(){
   header();
@@ -818,7 +819,7 @@ function bodyMap(sex,sel,opts={}){
 }
 
 /* ---------- discovery ---------- */
-const STEPS=['Profile','Goals','Body focus','Contact','Health','Training','Lifestyle','Baseline','Plan'];
+const STEPS=['Profile','Goals','Contact','Health','Training','Lifestyle','Baseline','Plan'];
 const PARQ=[
   'Has a doctor ever said you have a heart condition and should only do activity a doctor recommends?',
   'Do you feel pain in your chest when you are physically active?',
@@ -913,6 +914,16 @@ function tDiscovery(){
   const ta=(key,label,ph)=>`<div class="f"><label for="d-${key}">${label}</label><textarea class="inp" id="d-${key}" data-dk="${key}" placeholder="${esc(ph)}">${esc(d[key])}</textarea></div>`;
   const sec=(t,sub)=>`<div><div style="font-weight:800;font-size:15px;letter-spacing:-.3px">${t}</div>${sub?`<div class="muted" style="font-size:12.5px;margin-top:2px">${sub}</div>`:''}</div>`;
   let body='';
+  const bodyFocus=()=>{ const sex=figSex(d), sel=d.zones;
+    return `<div class="qs">
+    <div class="row" style="justify-content:space-between;align-items:flex-end">${sec(CM?'Where do you want to see change? Tap the body':'Where does the client want to see change? Tap the body','Pick every area to work on. Each one gets its own goal, measurement, and exercises in the plan.')}
+      <div class="figtoggle"><span>Figure</span><button type="button" class="opt${sex==='F'?' on':''}" data-fig="F">Female</button><button type="button" class="opt${sex==='M'?' on':''}" data-fig="M">Male</button></div></div>
+    <div class="bodylay"><div class="qs" style="gap:12px">${bodyMap(sex,sel,{interactive:true})}
+        <div class="legend">${INTENTS.map(i=>`<span><i class="idot i-${i.id}"></i>${i.n}</span>`).join('')}<span><i class="idot"></i>Not picked</span></div>
+        <div class="zchips">${['Upper','Core','Lower'].map(g=>`<div class="zrow"><b>${g}</b><div class="ztgl">${ZONES.filter(z=>z.g===g).map(z=>{const on=sel.find(x=>x.z===z.id);return `<button type="button" class="opt${on?' on':''}" data-ztog="${z.id}" aria-pressed="${!!on}">${z.n}</button>`}).join('')}</div></div>`).join('')}</div></div>
+      <div class="qs" style="gap:10px">${sel.length?`<div class="fl">Focus areas, in priority order</div><div class="zlist">${sel.map((x,k)=>`<div class="zitem"><span class="idot i-${x.i}"></span><span class="zn">${ZONE[x.z].n} <span class="zprio">#${k+1}</span></span><button type="button" class="rm" data-zrm="${x.z}" aria-label="Remove ${ZONE[x.z].n}">×</button><div class="opts">${INTENTS.map(i=>`<button type="button" class="opt${x.i===i.id?' on i-'+i.id:''}" data-zint="${x.z}" data-v="${i.id}" title="${i.s}">${i.n}</button>`).join('')}</div></div>`).join('')}</div>
+        <p class="note" style="margin:0">Slim down adds a tape measurement. Build muscle and Endurance add a strength or rep test. Mobility adds stretch and control work.</p>`
+        :`<div class="empty-z">Nothing picked yet. Tap the figure or use the list. ${d.goal?`New picks default to <b>${INTENT[defaultIntent(d.goal)].n}</b> based on your main goal, and you can change each one.`:''}</div>`}</div></div></div>`; }
   if(st===0){ const age=ageOf(d.dob); body=`<div class="qs">${inp('name','Full name','First and last name')}
     <div class="fg"><div class="f"><label for="d-dob">Date of birth</label><input class="inp" type="date" id="d-dob" data-dk="dob" value="${esc(d.dob)}"><span class="hint" id="age-hint">${age?`Age ${age}`:'Used to set heart-rate zones'}</span></div>
       <div class="f"><span class="fl">Sex</span>${opt('gender',['Female','Male','Prefer not to say'])}<span class="hint">Sets the figure on the body map.</span></div></div>
@@ -921,28 +932,19 @@ function tDiscovery(){
       ${d.format==='Small group'?`<div class="f"><label for="d-group">Group</label><select class="inp" id="d-group" data-dk="group">${Object.values(S.groups).map(g=>`<option value="${g.id}"${d.group===g.id?' selected':''}>${esc(g.name)} · ${esc(g.when)}</option>`).join('')}</select></div>`:'<div></div>'}</div>
     ${Object.keys(S.trainers).length===1?`<div class="f"><span class="fl">${CM?'Your trainer':'Trainer'}</span><span class="tchip" style="align-self:flex-start"><span class="av t">${S.trainers.t1.ini}</span>${esc(S.trainers.t1.name)}</span></div>`:`<div class="f"><span class="fl">${CM?'Choose your trainer':'Trainers'}</span><div class="opts">${Object.values(S.trainers).map(t=>`<button type="button" class="opt${d.trainers.includes(t.id)?' on':''}" data-tr="${t.id}">${esc(t.name)}</button>`).join('')}</div><span class="hint">${CM?'Pick one or more. You can change this later.':'Pick more than one to co-train this client.'}</span></div>`}
     <div class="f"><span class="fl">How did you hear about us?</span>${opt('referral',['Friend or member','Instagram','Google','Walked by','Other'])}</div></div>`; }
-  if(st===3) body=`<div class="qs">${sec('How we reach you')}
+  if(st===2) body=`<div class="qs">${sec('How we reach you')}
     <div class="fg">${inp('phone','Mobile phone','(925) 555-0100','tel')}${inp('email','Email','you@email.com','email')}</div>
     <div class="fg"><div class="f"><span class="fl">Best way to reach you</span>${opt('contactPref',['Text','Call','Email'])}</div>${inp('city','City','Livermore, CA')}</div>
     ${sec('Emergency contact','Who we call if something happens during a session')}
     <div class="fg3">${inp('emergName','Name','Full name')}${inp('emergRel','Relationship','Spouse, parent, friend')}${inp('emergPhone','Phone','(925) 555-0100','tel')}</div></div>`;
   if(st===1) body=`<div class="qs"><div class="f"><span class="fl">Main goal</span><div class="goalcards">${GOALS.map(g=>`<button type="button" class="gc${d.goal===g.id?' on':''}" data-goal="${g.id}"><span class="si">${ic(g.ic)}</span><b>${g.n}</b><span>${g.d}</span></button>`).join('')}</div></div>
+    <div class="focusbox" id="body-focus">${bodyFocus()}</div>
     <div class="f"><span class="fl">Also want to work on</span><div class="opts">${GOALS.filter(g=>g.id!==d.goal).map(g=>`<button type="button" class="opt${d.second.includes(g.id)?' on':''}" data-sec="${g.id}">${g.n}</button>`).join('')}</div></div>
     ${ta('now','What made you decide to start now?','The moment that pushed you to book this')}
     ${ta('last','Think about the last time you tried to get in shape. What got in the way?','Schedule, motivation, injury, did not know what to do...')}
     ${ta('win','Ninety days from now, what would make you say this worked?','Something you could see, feel, or do')}
     <div class="fg"><div class="f"><label for="d-eventDate">Training toward a date? (optional)</label><input class="inp" type="date" id="d-eventDate" data-dk="eventDate" value="${esc(d.eventDate)}"><span class="hint">Wedding, race, trip, season start</span></div></div></div>`;
-  if(st===2){ const sex=figSex(d), sel=d.zones;
-    body=`<div class="qs">
-    <div class="row" style="justify-content:space-between;align-items:flex-end">${sec(CM?'Tap the areas you want to work on':'Tap the areas the client wants to work on','Each one gets its own goal, measurement, and exercises in the plan.')}
-      <div class="figtoggle"><span>Figure</span><button type="button" class="opt${sex==='F'?' on':''}" data-fig="F">Female</button><button type="button" class="opt${sex==='M'?' on':''}" data-fig="M">Male</button></div></div>
-    <div class="bodylay"><div class="qs" style="gap:12px">${bodyMap(sex,sel,{interactive:true})}
-        <div class="legend">${INTENTS.map(i=>`<span><i class="idot i-${i.id}"></i>${i.n}</span>`).join('')}<span><i class="idot"></i>Not picked</span></div>
-        <div class="zchips">${['Upper','Core','Lower'].map(g=>`<div class="zrow"><b>${g}</b><div class="ztgl">${ZONES.filter(z=>z.g===g).map(z=>{const on=sel.find(x=>x.z===z.id);return `<button type="button" class="opt${on?' on':''}" data-ztog="${z.id}" aria-pressed="${!!on}">${z.n}</button>`}).join('')}</div></div>`).join('')}</div></div>
-      <div class="qs" style="gap:10px">${sel.length?`<div class="fl">Focus areas, in priority order</div><div class="zlist">${sel.map((x,k)=>`<div class="zitem"><span class="idot i-${x.i}"></span><span class="zn">${ZONE[x.z].n} <span class="zprio">#${k+1}</span></span><button type="button" class="rm" data-zrm="${x.z}" aria-label="Remove ${ZONE[x.z].n}">×</button><div class="opts">${INTENTS.map(i=>`<button type="button" class="opt${x.i===i.id?' on i-'+i.id:''}" data-zint="${x.z}" data-v="${i.id}" title="${i.s}">${i.n}</button>`).join('')}</div></div>`).join('')}</div>
-        <p class="note" style="margin:0">Slim down adds a tape measurement. Build muscle and Endurance add a strength or rep test. Mobility adds stretch and control work.</p>`
-        :`<div class="empty-z">Nothing picked yet. Tap the figure or use the list. ${d.goal?`New picks default to <b>${INTENT[defaultIntent(d.goal)].n}</b> based on your main goal, and you can change each one.`:''}</div>`}</div></div></div>`; }
-  if(st===4) body=`<div class="qs">${sec('Health screen','Answer yes or no. Any yes means we get a doctor\'s OK before intense training.')}
+  if(st===3) body=`<div class="qs">${sec('Health screen','Answer yes or no. Any yes means we get a doctor\'s OK before intense training.')}
     <div class="parq">${PARQ.map((q,i)=>`<div class="pq"><span class="pqn">${i+1}</span><span class="pqt">${esc(q)}</span><div class="opts">${['No','Yes'].map(v=>`<button type="button" class="opt${d.parq[i]===v?' on':''}${v==='Yes'&&d.parq[i]==='Yes'?' yes':''}" data-pq="${i}" data-v="${v}">${v}</button>`).join('')}</div></div>`).join('')}</div>
     ${parqFlag(d)?'<div class="alert">At least one Yes. Your trainer will ask for written clearance from your doctor before your first full session.</div>':''}
     <div class="f"><span class="fl">Any of these apply?</span>${opt('conditions',['High blood pressure','Diabetes','Asthma','Heart condition','Arthritis','Pregnant or postpartum'],true)}</div>
@@ -950,13 +952,13 @@ function tDiscovery(){
     <div class="f"><span class="fl">Areas we should protect</span>${opt('protect',['Lower back','Knees','Shoulders','Hips','Neck','Wrists'],true)}</div>
     ${ta('injuries','Past injuries or surgeries','What happened, when, and how it feels now')}
     <div class="f"><span class="fl">Has a doctor cleared you for exercise?</span>${opt('cleared',['Yes','No','Not sure'])}</div></div>`;
-  if(st===5) body=`<div class="qs">
+  if(st===4) body=`<div class="qs">
     <div class="fg"><div class="f"><span class="fl">Activity level right now</span>${opt('activity',['Sedentary','Lightly active','Active','Very active'])}</div><div class="f"><span class="fl">Days you work out now</span>${opt('curDays',['0','1','2','3','4','5+'])}</div></div>
     <div class="f"><span class="fl">What you've done before</span>${opt('types',['Weights','Cardio machines','Running','Group classes','Yoga or Pilates','Sports','CrossFit or HIIT','Nothing yet'],true)}</div>
     <div class="f"><span class="fl">Training experience</span>${opt('exp',['New','Some','Experienced'])}<span class="hint">New: under 6 months. Some: 6 months to 2 years. Experienced: 2+ years of steady training.</span></div>
     <div class="f"><span class="fl">Where you'll train between sessions</span>${opt('equip',['Full gym','Home gym','Minimal or bodyweight'])}</div>
     <div class="fg">${ta('enjoy','What kind of workouts do you enjoy?','Music, pace, solo or with people')}${ta('avoid','Anything you want to avoid?','Exercises or formats you dislike')}</div></div>`;
-  if(st===6) body=`<div class="qs">${sec('Schedule')}
+  if(st===5) body=`<div class="qs">${sec('Schedule')}
     <div class="f"><span class="fl">Days a week you can train</span>${opt('days',[2,3,4,5,6])}</div>
     <div class="fg"><div class="f"><span class="fl">Session length</span>${opt('len',['30 min','45 min','60 min'])}</div><div class="f"><span class="fl">Best time</span>${opt('time',['Early','Midday','Evening'])}</div></div>
     ${sec('Recovery')}
@@ -966,14 +968,14 @@ function tDiscovery(){
     <div class="fg"><div class="f"><span class="fl">Meals a day</span>${opt('meals',['1','2','3','4+'])}</div><div class="f"><span class="fl">Water a day</span>${opt('water',['Under 4 cups','4-8 cups','8+ cups'])}</div></div>
     <div class="fg"><div class="f"><span class="fl">Eating style</span>${opt('diet',['No specific plan','Vegetarian','Vegan','Low-carb','Other'])}</div><div class="f"><span class="fl">Alcohol</span>${opt('alcohol',['None','1-3 a week','4-7 a week','8+ a week'])}</div></div>
     <div class="f"><span class="fl">Want help with nutrition?</span>${opt('nutHelp',['Yes','Maybe later','No'])}</div></div>`;
-  if(st===7) body=`<div class="qs"><p class="dim" style="margin:0">${CM?'Optional. Know your numbers? Add them and your targets start today. Skip anything and your trainer measures it at your first assessment.':'Your trainer can fill these at the first assessment. Leave blank anything you don\'t know.'}</p>
+  if(st===6) body=`<div class="qs"><p class="dim" style="margin:0">${CM?'Optional. Know your numbers? Add them and your targets start today. Skip anything and your trainer measures it at your first assessment.':'Your trainer can fill these at the first assessment. Leave blank anything you don\'t know.'}</p>
     ${sec('Body')}<div class="fg3">${inp('weight','Body weight (lb)','172','number')}${inp('waist','Waist (in)','34','number','At the belly button')}${inp('rhr','Resting heart rate (bpm)','68','number','First thing in the morning')}</div>
     ${(()=>{ const sites=[...new Set(d.zones.map(z=>ZONE[z.z]&&ZONE[z.z].site).filter(k=>k&&k!=='waist'))]; const L={mChest:['Chest (in)','Across the nipple line'],mHips:['Hips (in)','Widest point of the glutes'],mThigh:['Thigh (in)','Widest point, right leg'],mArm:['Upper arm (in)','Relaxed, halfway down'],mCalf:['Calf (in)','Widest point, right leg']};
       return sites.length?`${sec('Focus area measurements','Tape measure, snug not tight. These track change in the areas you picked.')}<div class="fg3">${sites.map(k=>inp(k,L[k][0],'','number',L[k][1])).join('')}</div>`:''; })()}
     ${sec('Fitness tests')}<div class="fg">${inp('pushups','Max push-ups','12','number','Knees are fine, note it')}${inp('plank','Plank hold (sec)','45','number')}${inp('reach','Sit and reach (in)','-1','number','Toes = 0. Past toes is plus.')}${inp('mile','1-mile walk or run','11:40','text','Minutes:seconds')}
       ${(()=>{ const T={squats:['Squats in 60 sec','Bodyweight, full depth you control'],rows:['Inverted rows','Under a bar or TRX, body straight'],calf:['Single-leg calf raises','Right leg, full range']}; return Object.keys(T).filter(k=>d.zones.some(z=>ZONE[z.z]&&ZONE[z.z].test===k)).map(k=>inp(k,T[k][0],'','number',T[k][1]+'. For '+d.zones.filter(z=>ZONE[z.z].test===k).map(z=>ZONE[z.z].n.toLowerCase()).join(' and ')+'.')).join(''); })()}</div>
     ${CM?'':ta('notes','Trainer notes','Posture, movement quality, anything you saw')}</div>`;
-  if(st===8){ const p=genPlan(d), age=ageOf(d.dob), mhr=age?220-age:null; body=`<div class="qs">
+  if(st===7){ const p=genPlan(d), age=ageOf(d.dob), mhr=age?220-age:null; body=`<div class="qs">
     <div class="sumhead"><div class="av lg" data-h="${hue(d.name||'x')}">${esc((d.name||'?').trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase())}</div><div style="min-width:0"><div class="pname">${esc(d.name||'New client')}</div><div class="row" style="gap:6px;margin-top:6px"><span class="pill gold">${p.level}</span>${d.goal?`<span class="pill">${esc(goalName(d.goal))}</span>`:''}${age?`<span class="pill">Age ${age}</span>`:''}${parqFlag(d)?'<span class="pill warn">Needs clearance</span>':''}</div></div></div>
     <div class="plan">
       <div class="pm"><div class="k">Starting level</div><div class="v">${p.level}</div></div>
@@ -989,8 +991,8 @@ function tDiscovery(){
     <div><div class="fl" style="margin-bottom:4px">Milestones</div><div class="ms">${p.miles.map(x=>`<div class="msi"><b>${x.w}</b><span>${esc(x.t)}</span></div>`).join('')}</div></div>
     <p class="note" style="margin:0">${CM?'Starting your program saves your profile, unlocks your First Spark badge (+200 XP), and loads your circuit and Daily Reset routines.':'Creating the client saves their profile, awards the First Spark badge (+200 XP), and assigns the circuit and Daily Reset programs.'}</p></div>`; }
   const canNext=stepOk(d,st);
-  const why=['We need a name and at least one trainer.','Pick a main goal.','Tap at least one area on the body map.','Add a phone number or email.','Answer all seven health questions.'][st];
-  const head=CM?`<h1 class="pt">${['Let\'s get to know you','What are you training for?','Where do you want to see change?','How do we reach you?','A quick health check','Your training background','Your week','Know your numbers?','Your starting program'][st]}</h1><p class="ps">${st===0?'About 10 minutes. Your answers build your program.':`Step ${st+1} of ${STEPS.length}`}</p>`:`<h1 class="pt">New client intake</h1>
+  const why=['We need a name and at least one trainer.','Pick a main goal and tap at least one area on the body.','Add a phone number or email.','Answer all seven health questions.'][st];
+  const head=CM?`<h1 class="pt">${['Let\'s get to know you','What are you training for?','How do we reach you?','A quick health check','Your training background','Your week','Know your numbers?','Your starting program'][st]}</h1><p class="ps">${st===0?'About 10 minutes. Your answers build your program.':`Step ${st+1} of ${STEPS.length}`}</p>`:`<h1 class="pt">New client intake</h1>
   <p class="ps">Discovery comes first. Profile, health, history, and lifestyle answers set the client's targets and shape the starting program.</p>`;
   return `${head}
   <div class="${CM?'onb':'grid'}"><div class="col"><div class="card">
@@ -1020,7 +1022,7 @@ function createFromDisc(){
   S.disc={step:0,data:null}; S.sel=id; if(!c.trainers.includes(S.trainerId)) S.rosterAll=true; S.ttab='clients';
   toast(`${c.name} added. First Spark unlocked (+200 XP)`); render();
 }
-function stepOk(d,st){ return st===0? d.name.trim().length>1 && d.trainers.length>0 : st===1? !!d.goal : st===2? (d.zones||[]).length>0 : st===3? !!(d.phone.trim()||d.email.trim()) : st===4? d.parq.every(x=>x) : true; }
+function stepOk(d,st){ return st===0? d.name.trim().length>1 && d.trainers.length>0 : st===1? !!d.goal && (d.zones||[]).length>0 : st===2? !!(d.phone.trim()||d.email.trim()) : st===3? d.parq.every(x=>x) : true; }
 function heightStr(x){ return x.heightFt?`${x.heightFt}′${x.heightIn||0}″`:null; }
 function focusCard(c,title){
   const x=c.disc||{}, zs=(x.zones||[]).filter(z=>ZONE[z.z]);

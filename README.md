@@ -7,7 +7,7 @@ New clients start with a discovery form. Their answers become a starting program
 ## What's in the test build
 
 **Client side**
-- Welcome screen that leads into a 9-step discovery: profile, goals, body focus map, contact and emergency contact, a 7-question health screen, training background, lifestyle and nutrition, optional baseline numbers, and the generated plan.
+- Welcome screen that leads into an 8-step discovery: profile, goals with the body focus map, contact and emergency contact, a 7-question health screen, training background, lifestyle and nutrition, optional baseline numbers, and the generated plan.
 - Body focus map: front and back figures, female or male based on the client's sex. Clients tap the areas they want to work on (13 zones) and set a goal for each: Slim down, Build muscle, Endurance, or Mobility. Each pick adds a tape measurement or rep test, exercise focus, and milestone targets to the plan.
 - Profile with level, XP, streak, badges, trainer awards, and success metrics.
 - Circuit timer with work, switch, and rest phases, audio cues, and per-station logging.
