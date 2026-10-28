@@ -656,7 +656,7 @@ function cWelcome(){
       <div class="row"><button class="btn pri lg" data-start="1">Start discovery ${ic('up','style="transform:rotate(90deg)"')}</button><button class="btn ghost" data-role-switch="trainer">I'm a trainer</button></div>
       <p class="note">About 10 minutes. Your answers stay on this device in the test version.</p></div>
     <div class="wl-tiles">
-      <div class="stat"><div class="si">${ic('clip')}</div><b>1. Discovery</b><span>Goals, health, history</span></div>
+      <div class="stat"><div class="si">${ic('clip')}</div><b>1. Discovery</b><span>Goals, body focus map, health</span></div>
       <div class="stat"><div class="si">${ic('target')}</div><b>2. Your plan</b><span>Targets and a weekly blueprint</span></div>
       <div class="stat"><div class="si">${ic('bolt')}</div><b>3. Level up</b><span>XP, badges, guided timers</span></div>
     </div></section>`;
@@ -818,7 +818,7 @@ function bodyMap(sex,sel,opts={}){
 }
 
 /* ---------- discovery ---------- */
-const STEPS=['Profile','Contact','Goals','Body focus','Health','Training','Lifestyle','Baseline','Plan'];
+const STEPS=['Profile','Goals','Body focus','Contact','Health','Training','Lifestyle','Baseline','Plan'];
 const PARQ=[
   'Has a doctor ever said you have a heart condition and should only do activity a doctor recommends?',
   'Do you feel pain in your chest when you are physically active?',
@@ -921,18 +921,18 @@ function tDiscovery(){
       ${d.format==='Small group'?`<div class="f"><label for="d-group">Group</label><select class="inp" id="d-group" data-dk="group">${Object.values(S.groups).map(g=>`<option value="${g.id}"${d.group===g.id?' selected':''}>${esc(g.name)} · ${esc(g.when)}</option>`).join('')}</select></div>`:'<div></div>'}</div>
     ${Object.keys(S.trainers).length===1?`<div class="f"><span class="fl">${CM?'Your trainer':'Trainer'}</span><span class="tchip" style="align-self:flex-start"><span class="av t">${S.trainers.t1.ini}</span>${esc(S.trainers.t1.name)}</span></div>`:`<div class="f"><span class="fl">${CM?'Choose your trainer':'Trainers'}</span><div class="opts">${Object.values(S.trainers).map(t=>`<button type="button" class="opt${d.trainers.includes(t.id)?' on':''}" data-tr="${t.id}">${esc(t.name)}</button>`).join('')}</div><span class="hint">${CM?'Pick one or more. You can change this later.':'Pick more than one to co-train this client.'}</span></div>`}
     <div class="f"><span class="fl">How did you hear about us?</span>${opt('referral',['Friend or member','Instagram','Google','Walked by','Other'])}</div></div>`; }
-  if(st===1) body=`<div class="qs">${sec('How we reach you')}
+  if(st===3) body=`<div class="qs">${sec('How we reach you')}
     <div class="fg">${inp('phone','Mobile phone','(925) 555-0100','tel')}${inp('email','Email','you@email.com','email')}</div>
     <div class="fg"><div class="f"><span class="fl">Best way to reach you</span>${opt('contactPref',['Text','Call','Email'])}</div>${inp('city','City','Livermore, CA')}</div>
     ${sec('Emergency contact','Who we call if something happens during a session')}
     <div class="fg3">${inp('emergName','Name','Full name')}${inp('emergRel','Relationship','Spouse, parent, friend')}${inp('emergPhone','Phone','(925) 555-0100','tel')}</div></div>`;
-  if(st===2) body=`<div class="qs"><div class="f"><span class="fl">Main goal</span><div class="goalcards">${GOALS.map(g=>`<button type="button" class="gc${d.goal===g.id?' on':''}" data-goal="${g.id}"><span class="si">${ic(g.ic)}</span><b>${g.n}</b><span>${g.d}</span></button>`).join('')}</div></div>
+  if(st===1) body=`<div class="qs"><div class="f"><span class="fl">Main goal</span><div class="goalcards">${GOALS.map(g=>`<button type="button" class="gc${d.goal===g.id?' on':''}" data-goal="${g.id}"><span class="si">${ic(g.ic)}</span><b>${g.n}</b><span>${g.d}</span></button>`).join('')}</div></div>
     <div class="f"><span class="fl">Also want to work on</span><div class="opts">${GOALS.filter(g=>g.id!==d.goal).map(g=>`<button type="button" class="opt${d.second.includes(g.id)?' on':''}" data-sec="${g.id}">${g.n}</button>`).join('')}</div></div>
     ${ta('now','What made you decide to start now?','The moment that pushed you to book this')}
     ${ta('last','Think about the last time you tried to get in shape. What got in the way?','Schedule, motivation, injury, did not know what to do...')}
     ${ta('win','Ninety days from now, what would make you say this worked?','Something you could see, feel, or do')}
     <div class="fg"><div class="f"><label for="d-eventDate">Training toward a date? (optional)</label><input class="inp" type="date" id="d-eventDate" data-dk="eventDate" value="${esc(d.eventDate)}"><span class="hint">Wedding, race, trip, season start</span></div></div></div>`;
-  if(st===3){ const sex=figSex(d), sel=d.zones;
+  if(st===2){ const sex=figSex(d), sel=d.zones;
     body=`<div class="qs">
     <div class="row" style="justify-content:space-between;align-items:flex-end">${sec(CM?'Tap the areas you want to work on':'Tap the areas the client wants to work on','Each one gets its own goal, measurement, and exercises in the plan.')}
       <div class="figtoggle"><span>Figure</span><button type="button" class="opt${sex==='F'?' on':''}" data-fig="F">Female</button><button type="button" class="opt${sex==='M'?' on':''}" data-fig="M">Male</button></div></div>
@@ -989,8 +989,8 @@ function tDiscovery(){
     <div><div class="fl" style="margin-bottom:4px">Milestones</div><div class="ms">${p.miles.map(x=>`<div class="msi"><b>${x.w}</b><span>${esc(x.t)}</span></div>`).join('')}</div></div>
     <p class="note" style="margin:0">${CM?'Starting your program saves your profile, unlocks your First Spark badge (+200 XP), and loads your circuit and Daily Reset routines.':'Creating the client saves their profile, awards the First Spark badge (+200 XP), and assigns the circuit and Daily Reset programs.'}</p></div>`; }
   const canNext=stepOk(d,st);
-  const why=['We need a name and at least one trainer.','Add a phone number or email.','Pick a main goal.','Tap at least one area on the body map.','Answer all seven health questions.'][st];
-  const head=CM?`<h1 class="pt">${['Let\'s get to know you','How do we reach you?','What are you training for?','Where do you want to see change?','A quick health check','Your training background','Your week','Know your numbers?','Your starting program'][st]}</h1><p class="ps">${st===0?'About 10 minutes. Your answers build your program.':`Step ${st+1} of ${STEPS.length}`}</p>`:`<h1 class="pt">New client intake</h1>
+  const why=['We need a name and at least one trainer.','Pick a main goal.','Tap at least one area on the body map.','Add a phone number or email.','Answer all seven health questions.'][st];
+  const head=CM?`<h1 class="pt">${['Let\'s get to know you','What are you training for?','Where do you want to see change?','How do we reach you?','A quick health check','Your training background','Your week','Know your numbers?','Your starting program'][st]}</h1><p class="ps">${st===0?'About 10 minutes. Your answers build your program.':`Step ${st+1} of ${STEPS.length}`}</p>`:`<h1 class="pt">New client intake</h1>
   <p class="ps">Discovery comes first. Profile, health, history, and lifestyle answers set the client's targets and shape the starting program.</p>`;
   return `${head}
   <div class="${CM?'onb':'grid'}"><div class="col"><div class="card">
@@ -1020,7 +1020,7 @@ function createFromDisc(){
   S.disc={step:0,data:null}; S.sel=id; if(!c.trainers.includes(S.trainerId)) S.rosterAll=true; S.ttab='clients';
   toast(`${c.name} added. First Spark unlocked (+200 XP)`); render();
 }
-function stepOk(d,st){ return st===0? d.name.trim().length>1 && d.trainers.length>0 : st===1? !!(d.phone.trim()||d.email.trim()) : st===2? !!d.goal : st===3? (d.zones||[]).length>0 : st===4? d.parq.every(x=>x) : true; }
+function stepOk(d,st){ return st===0? d.name.trim().length>1 && d.trainers.length>0 : st===1? !!d.goal : st===2? (d.zones||[]).length>0 : st===3? !!(d.phone.trim()||d.email.trim()) : st===4? d.parq.every(x=>x) : true; }
 function heightStr(x){ return x.heightFt?`${x.heightFt}′${x.heightIn||0}″`:null; }
 function focusCard(c,title){
   const x=c.disc||{}, zs=(x.zones||[]).filter(z=>ZONE[z.z]);
