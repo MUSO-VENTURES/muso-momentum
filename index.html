@@ -485,11 +485,9 @@ const fmtVal = (m,v) => v==null||v===''?'-':(m.unit==='time'?mmss(v):(m.unit==='
 const S = {
   role:'trainer', ttab:'clients', ctab:'home', trainerId:'t1', rosterAll:false, sel:'c1', me:'c1',
   trainers:{
-    t1:{id:'t1',name:'Marcus Reyes',ini:'MR',cert:'NASM-CPT'},
-    t2:{id:'t2',name:'Kiana Lee',ini:'KL',cert:'NASM-CES'},
-    t3:{id:'t3',name:'Andre Watts',ini:'AW',cert:'NASM-PES'}
+    t1:{id:'t1',name:'Shane Musseau',ini:'SM',cert:'Founder and head trainer'}
   },
-  groups:{ g1:{id:'g1',name:'Sunrise Small Group',when:'Tue / Thu 6:00 AM',trainers:['t2','t1']} },
+  groups:{ g1:{id:'g1',name:'Sunrise Small Group',when:'Tue / Thu 6:00 AM',trainers:['t1']} },
   lb:{enabled:false, metric:'xp'},
   clients:{},
   circuit:{name:'Momentum Circuit A',work:40,transition:15,rounds:3,roundRest:60,stations:[
@@ -512,7 +510,7 @@ const S = {
   disc:{step:0,data:null}
 };
 function mk(id,name,ini,o){ S.clients[id]=Object.assign({id,name,ini,trainers:['t1'],group:null,goal:'strength',second:[],why:'',since:'Sep 2026',xp:400,streak:1,sessions:4,badges:['spark'],metrics:[],circ:[],stretchN:0,consent:null,awards:[],flag:null,disc:{}},o); }
-mk('c1','Dana Ortiz','DO',{trainers:['t1','t2'],goal:'strength',second:['mobility'],since:'Aug 2026',xp:2390,streak:6,sessions:31,stretchN:14,
+mk('c1','Dana Ortiz','DO',{trainers:['t1'],goal:'strength',second:['mobility'],since:'Aug 2026',xp:2390,streak:6,sessions:31,stretchN:14,
   why:'Keep up with my kids on weekends and stop my lower back from tapping out by 3 PM.',
   badges:['spark','circ1','full','reset5','three','streak4','pr','mile'],
   metrics:[
@@ -525,31 +523,31 @@ mk('c1','Dana Ortiz','DO',{trainers:['t1','t2'],goal:'strength',second:['mobilit
     {k:'weight',label:'Body weight',unit:'lb',base:172,cur:166,target:163,dir:-1,hist:[172,171,169,168,167,166]}
   ],
   circ:[{d:'Sep 22',t:262},{d:'Sep 29',t:279},{d:'Oct 6',t:288},{d:'Oct 13',t:301},{d:'Oct 20',t:296}],
-  awards:[{n:'Form Check Hero',by:'t2',note:'Kettlebell swings looked crisp all session.',d:'Oct 21'},{n:'Showed Up Strong',by:'t1',note:'Six straight weeks on plan.',d:'Oct 14'}],
+  awards:[{n:'Form Check Hero',by:'t1',note:'Kettlebell swings looked crisp all session.',d:'Oct 21'},{n:'Showed Up Strong',by:'t1',note:'Six straight weeks on plan.',d:'Oct 14'}],
   disc:{figure:'F',zones:[{z:'glutes',i:'build'},{z:'abs',i:'slim'},{z:'lowerBack',i:'mobile'},{z:'quads',i:'build'}],mHips:'39',waist:'33',dob:'1990-06-03',gender:'Female',heightFt:'5',heightIn:'5',occupation:'Dental hygienist',referral:'Friend or member',email:'dana.ortiz@example.com',phone:'(925) 555-0117',contactPref:'Text',city:'Livermore, CA',emergName:'Marco Ortiz',emergRel:'Spouse',emergPhone:'(925) 555-0163',parq:['No','No','No','No','No','No','No'],conditions:[],meds:'None',injuries:'Lower back strain lifting a toddler, spring 2025. Flares when sitting long.',activity:'Lightly active',curDays:'1',types:['Cardio machines','Group classes'],equip:'Full gym',enjoy:'Upbeat, fast-moving sessions.',avoid:'Heavy barbell deadlifts for now.',work:'On my feet',sleep:'7',stress:3,meals:'3',water:'4-8 cups',diet:'No specific plan',alcohol:'1-3 a week',nutHelp:'Maybe later',level:'Intermediate',now:'Back pain was starting to run my weekends.',days:3,len:'45 min',time:'Early',exp:'Some',protect:['Lower back'],cleared:'Yes',last:'Signed up for a big-box gym, went twice, got lost on the machines and quit.',win:'Carry both kids up the stairs without my back complaining.'}
 });
 mk('c2','Jordan Pike','JP',{disc:{figure:'M',zones:[{z:'calves',i:'endure'},{z:'quads',i:'endure'},{z:'hamstrings',i:'endure'},{z:'abs',i:'endure'}],dob:'1995-11-21',gender:'Male',email:'jordan.pike@example.com',phone:'(925) 555-0131',contactPref:'Call',city:'Pleasanton, CA',emergName:'Lisa Pike',emergRel:'Mother',emergPhone:'(925) 555-0174',parq:['No','No','No','No','No','No','No'],cleared:'Yes',exp:'Some',equip:'Full gym',days:4,len:'60 min',time:'Evening',level:'Intermediate',eventDate:'2027-03-14'},trainers:['t1'],goal:'endurance',since:'Sep 2026',xp:980,streak:3,sessions:12,stretchN:4,badges:['spark','circ1','three'],flag:'No session in 6 days',
   why:'Running my first half marathon in March.',
   metrics:[{k:'mile',label:'1-mile run',unit:'time',base:610,cur:575,target:540,dir:-1,hist:[610,601,590,575]},{k:'rhr',label:'Resting HR',unit:'bpm',base:68,cur:64,target:60,dir:-1,hist:[68,67,65,64]},{k:'plank',label:'Plank hold',unit:'sec',base:60,cur:85,target:120,dir:1,hist:[60,70,78,85]}],
   circ:[{d:'Oct 6',t:240},{d:'Oct 13',t:251}]});
-mk('c3','Priya Natarajan','PN',{disc:{gender:'Female',figure:'F',zones:[{z:'abs',i:'slim'},{z:'obliques',i:'slim'},{z:'glutes',i:'build'},{z:'triceps',i:'slim'}],email:'priya.n@example.com',phone:'(925) 555-0189',contactPref:'Text',city:'Livermore, CA',parq:['No','No','No','No','No','No','No'],cleared:'Yes',days:3,len:'45 min'},trainers:['t2','t1'],group:'g1',goal:'fat',since:'Sep 2026',xp:1460,streak:5,sessions:18,stretchN:9,badges:['spark','circ1','reset5','three','streak4'],
+mk('c3','Priya Natarajan','PN',{disc:{gender:'Female',figure:'F',zones:[{z:'abs',i:'slim'},{z:'obliques',i:'slim'},{z:'glutes',i:'build'},{z:'triceps',i:'slim'}],email:'priya.n@example.com',phone:'(925) 555-0189',contactPref:'Text',city:'Livermore, CA',parq:['No','No','No','No','No','No','No'],cleared:'Yes',days:3,len:'45 min'},trainers:['t1'],group:'g1',goal:'fat',since:'Sep 2026',xp:1460,streak:5,sessions:18,stretchN:9,badges:['spark','circ1','reset5','three','streak4'],
   why:'Feel confident at my sister\'s wedding in June.',
   metrics:[{k:'weight',label:'Body weight',unit:'lb',base:158,cur:151,target:146,dir:-1,hist:[158,156,154,152,151]},{k:'pushups',label:'Push-ups',unit:'reps',base:5,cur:11,target:12,dir:1,hist:[5,7,8,10,11]}],
   circ:[{d:'Oct 13',t:221},{d:'Oct 20',t:236}]});
-mk('c4','Luis Moreno','LM',{disc:{gender:'Male',figure:'M',zones:[{z:'chest',i:'build'},{z:'shoulders',i:'build'},{z:'biceps',i:'build'},{z:'lats',i:'build'}],email:'luis.moreno@example.com',phone:'(925) 555-0126',contactPref:'Text',city:'Livermore, CA',parq:['No','No','No','No','No','No','No'],cleared:'Yes',days:3,len:'45 min'},trainers:['t2','t1'],group:'g1',goal:'strength',since:'Oct 2026',xp:620,streak:2,sessions:7,stretchN:2,badges:['spark','circ1'],
+mk('c4','Luis Moreno','LM',{disc:{gender:'Male',figure:'M',zones:[{z:'chest',i:'build'},{z:'shoulders',i:'build'},{z:'biceps',i:'build'},{z:'lats',i:'build'}],email:'luis.moreno@example.com',phone:'(925) 555-0126',contactPref:'Text',city:'Livermore, CA',parq:['No','No','No','No','No','No','No'],cleared:'Yes',days:3,len:'45 min'},trainers:['t1'],group:'g1',goal:'strength',since:'Oct 2026',xp:620,streak:2,sessions:7,stretchN:2,badges:['spark','circ1'],
   why:'Back to the strength I had in college.',
   metrics:[{k:'pushups',label:'Push-ups',unit:'reps',base:22,cur:28,target:33,dir:1,hist:[22,25,28]}]});
-mk('c5','Ava Chen','AC',{disc:{gender:'Female',figure:'F',zones:[{z:'lowerBack',i:'mobile'},{z:'abs',i:'endure'},{z:'upperBack',i:'endure'}],email:'ava.chen@example.com',phone:'(925) 555-0153',contactPref:'Text',city:'Livermore, CA',parq:['No','No','No','No','No','No','No'],cleared:'Yes',days:3,len:'45 min'},trainers:['t2','t1'],group:'g1',goal:'health',since:'Oct 2026',xp:510,streak:2,sessions:6,stretchN:6,badges:['spark','reset5'],flag:'Pending leaderboard answer',
+mk('c5','Ava Chen','AC',{disc:{gender:'Female',figure:'F',zones:[{z:'lowerBack',i:'mobile'},{z:'abs',i:'endure'},{z:'upperBack',i:'endure'}],email:'ava.chen@example.com',phone:'(925) 555-0153',contactPref:'Text',city:'Livermore, CA',parq:['No','No','No','No','No','No','No'],cleared:'Yes',days:3,len:'45 min'},trainers:['t1'],group:'g1',goal:'health',since:'Oct 2026',xp:510,streak:2,sessions:6,stretchN:6,badges:['spark','reset5'],flag:'Pending leaderboard answer',
   why:'More energy for long shifts at the hospital.',
   metrics:[{k:'rhr',label:'Resting HR',unit:'bpm',base:74,cur:71,target:66,dir:-1,hist:[74,72,71]}]});
-mk('c6','Mo Haddad','MH',{disc:{gender:'Male',figure:'M',zones:[{z:'lowerBack',i:'mobile'},{z:'hamstrings',i:'mobile'},{z:'obliques',i:'mobile'},{z:'shoulders',i:'mobile'}],email:'mo.haddad@example.com',phone:'(925) 555-0108',contactPref:'Text',city:'Livermore, CA',parq:['No','No','No','No','No','No','No'],cleared:'Yes',days:3,len:'45 min'},trainers:['t2'],goal:'mobility',since:'Jul 2026',xp:1880,streak:9,sessions:26,stretchN:41,badges:['spark','reset5','reset20','streak4','crush','three'],
+mk('c6','Mo Haddad','MH',{disc:{gender:'Male',figure:'M',zones:[{z:'lowerBack',i:'mobile'},{z:'hamstrings',i:'mobile'},{z:'obliques',i:'mobile'},{z:'shoulders',i:'mobile'}],email:'mo.haddad@example.com',phone:'(925) 555-0108',contactPref:'Text',city:'Livermore, CA',parq:['No','No','No','No','No','No','No'],cleared:'Yes',days:3,len:'45 min'},trainers:['t1'],goal:'mobility',since:'Jul 2026',xp:1880,streak:9,sessions:26,stretchN:41,badges:['spark','reset5','reset20','streak4','crush','three'],
   why:'Golf 18 holes without my hips locking up.',
   metrics:[{k:'reach',label:'Sit and reach',unit:'in',base:-4,cur:0.5,target:1,dir:1,hist:[-4,-3,-2,-1,0,0.5]}]});
 S.clients.c5.flag=null;
 
 /* per-viewer convenience only: remember role and tab */
 S.role='client'; S.onboarded=false; S.started=false;
-try{ const p=JSON.parse(localStorage.getItem('muso-momentum')||'null'); if(p&&p.v===2){ ['clients','lb','circuit','stretch','onboarded','started','me','sel','role','ttab','ctab','trainerId','disc'].forEach(k=>{ if(p[k]!==undefined) S[k]=p[k]; }); if(!S.clients[S.me]) S.me=Object.keys(S.clients)[0]; } }catch(e){}
+try{ const p=JSON.parse(localStorage.getItem('muso-momentum')||'null'); if(p&&p.v===3){ ['clients','lb','circuit','stretch','onboarded','started','me','sel','role','ttab','ctab','trainerId','disc'].forEach(k=>{ if(p[k]!==undefined) S[k]=p[k]; }); if(!S.clients[S.me]) S.me=Object.keys(S.clients)[0]; } }catch(e){}
 function saveUI(){ persist(); }
 
 /* ---------- feedback ---------- */
@@ -665,7 +663,7 @@ function cWelcome(){
 }
 function resetLine(){ return `<p class="resetline">Test build · <button type="button" data-reset="1">Reset test data</button>${S.role==='client'&&S.onboarded?' · <button type="button" data-newclient="1">Start as a new client</button>':''}</p>`; }
 function onboarding(){ return S.role==='client'&&!S.onboarded; }
-function persist(){ try{ const keep={v:2,clients:S.clients,lb:S.lb,circuit:S.circuit,stretch:S.stretch,onboarded:!!S.onboarded,started:!!S.started,me:S.me,sel:S.sel,role:S.role,ttab:S.ttab,ctab:S.ctab,trainerId:S.trainerId,disc:S.disc};
+function persist(){ try{ const keep={v:3,clients:S.clients,lb:S.lb,circuit:S.circuit,stretch:S.stretch,onboarded:!!S.onboarded,started:!!S.started,me:S.me,sel:S.sel,role:S.role,ttab:S.ttab,ctab:S.ctab,trainerId:S.trainerId,disc:S.disc};
   localStorage.setItem('muso-momentum',JSON.stringify(keep,(k,v)=>k==='_fresh'?undefined:v)); }catch(e){} }
 function render(){
   header();
@@ -690,10 +688,10 @@ function tClients(){
   const rrow=c=>`<button class="rrow${c.id===S.sel?' sel':''}" data-sel="${c.id}"><div class="av" data-h="${hue(c.ini)}">${esc(c.ini)}</div><div style="min-width:0"><div class="rn">${esc(c.name)}${c.flag?`<span class="pill warn">${esc(c.flag)}</span>`:''}</div><div class="rs">${esc(goalName(c.goal))} · ${c.trainers.map(id=>S.trainers[id].name.split(' ')[0]).join(' + ')}</div></div><div class="rr"><span class="lvl">LVL ${lvlOf(c.xp)}</span><span class="rs" style="margin:0">${c.streak} wk streak</span></div></button>`;
   const c=S.clients[S.sel];
   return `<h1 class="pt">${S.rosterAll?'All clients':'Your clients'}</h1><div class="rule"></div>
-  <p class="ps">${esc(t.name)}, ${esc(t.cert)}. Train one-on-one or run a small group, and share any client with another trainer.</p>
+  <p class="ps">${esc(t.name)}, ${esc(t.cert)}. Train one-on-one or run a small group.${Object.keys(S.trainers).length>1?' Share any client with another trainer.':''}</p>
   <div class="grid">
     <div class="col">
-      <div class="card"><div class="ch"><h2>Roster</h2><div class="row"><div class="seg" style="padding:3px"><button class="${!S.rosterAll?'on':''}" data-rall="0" style="padding:6px 12px;font-size:12px">Mine</button><button class="${S.rosterAll?'on':''}" data-rall="1" style="padding:6px 12px;font-size:12px">Whole gym</button></div><button class="btn sm pri" data-go="discovery">${ic('plus')} New client</button></div></div>
+      <div class="card"><div class="ch"><h2>Roster</h2><div class="row">${Object.keys(S.trainers).length>1?`<div class="seg" style="padding:3px"><button class="${!S.rosterAll?'on':''}" data-rall="0" style="padding:6px 12px;font-size:12px">Mine</button><button class="${S.rosterAll?'on':''}" data-rall="1" style="padding:6px 12px;font-size:12px">Whole gym</button></div>`:''}<button class="btn sm pri" data-go="discovery">${ic('plus')} New client</button></div></div>
         <div class="roster">
           ${solo.length?`<div class="gh"><span>One-on-one</span><span>${solo.length}</span></div>`+solo.map(rrow).join(''):''}
           ${Object.entries(groups).map(([g,cs])=>`<div class="gh"><span>${esc(S.groups[g].name)} · ${esc(S.groups[g].when)}</span><span>${cs.length}</span></div>`+cs.map(rrow).join('')).join('')}
@@ -921,7 +919,7 @@ function tDiscovery(){
     <div class="fg3">${inp('heightFt','Height (ft)','5','number')}${inp('heightIn','Height (in)','8','number')}${inp('occupation','Occupation','What you do for work')}</div>
     <div class="fg"><div class="f"><span class="fl">Training format</span>${opt('format',['1:1','Small group'])}</div>
       ${d.format==='Small group'?`<div class="f"><label for="d-group">Group</label><select class="inp" id="d-group" data-dk="group">${Object.values(S.groups).map(g=>`<option value="${g.id}"${d.group===g.id?' selected':''}>${esc(g.name)} · ${esc(g.when)}</option>`).join('')}</select></div>`:'<div></div>'}</div>
-    <div class="f"><span class="fl">${CM?'Choose your trainer':'Trainers'}</span><div class="opts">${Object.values(S.trainers).map(t=>`<button type="button" class="opt${d.trainers.includes(t.id)?' on':''}" data-tr="${t.id}">${esc(t.name)}</button>`).join('')}</div><span class="hint">${CM?'Pick one or more. You can change this later.':'Pick more than one to co-train this client.'}</span></div>
+    ${Object.keys(S.trainers).length===1?`<div class="f"><span class="fl">${CM?'Your trainer':'Trainer'}</span><span class="tchip" style="align-self:flex-start"><span class="av t">${S.trainers.t1.ini}</span>${esc(S.trainers.t1.name)}</span></div>`:`<div class="f"><span class="fl">${CM?'Choose your trainer':'Trainers'}</span><div class="opts">${Object.values(S.trainers).map(t=>`<button type="button" class="opt${d.trainers.includes(t.id)?' on':''}" data-tr="${t.id}">${esc(t.name)}</button>`).join('')}</div><span class="hint">${CM?'Pick one or more. You can change this later.':'Pick more than one to co-train this client.'}</span></div>`}
     <div class="f"><span class="fl">How did you hear about us?</span>${opt('referral',['Friend or member','Instagram','Google','Walked by','Other'])}</div></div>`; }
   if(st===1) body=`<div class="qs">${sec('How we reach you')}
     <div class="fg">${inp('phone','Mobile phone','(925) 555-0100','tel')}${inp('email','Email','you@email.com','email')}</div>
