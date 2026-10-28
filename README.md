@@ -16,6 +16,7 @@ New clients start with a discovery form. Their answers become a starting program
 - Leaderboard that stays locked until a trainer turns it on and the client opts in.
 
 **Trainer side**
+- Client dashboard for every client, opened from the roster. Shows everything from discovery in one place: contact and emergency contact, goals and motivation, body focus map, the full health screen with clearance status, training background, lifestyle and nutrition, baseline numbers, live success metrics, and the starting program. New submissions are tagged "New intake" in the roster. Copy the full profile as text or download it as JSON.
 - Roster across one-on-one clients and small groups, with co-trainers.
 - Full client profile: contact, emergency contact, health screen, training background, lifestyle, discovery answers.
 - Metric logging, trainer awards, program builder for the circuit and stretch routines.
