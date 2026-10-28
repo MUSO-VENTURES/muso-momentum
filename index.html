@@ -9,6 +9,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="MUSO Momentum">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="apple-touch-icon" href="icon.svg">
 <link rel="manifest" href="manifest.webmanifest">
@@ -410,10 +411,16 @@ svg.body .zg:focus-visible .zp{stroke:var(--text);stroke-width:2.2}
 .gymrow .opt{padding:6px 12px;font-size:12px;background:var(--surface)}
 .gymrow .opt.on{background:var(--text);color:var(--surface)}
 .gymrow .rm{background:none;border:0;color:var(--faint);font-size:18px;line-height:1;padding:2px 6px}
+.prod .top .seg{display:none}
+.login{max-width:440px;margin:30px auto 0}
+.login .card{display:flex;flex-direction:column;gap:14px;padding:30px 24px}
 </style>
 
 </head>
 <body>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script>window.MUSO_PROD=true;</script>
 <header class="top gut">
   <div class="wrap">
     <div class="brand">
@@ -502,6 +509,8 @@ const mmss = s => { s=Math.max(0,Math.round(s)); return Math.floor(s/60)+':'+Str
 const fmtVal = (m,v) => v==null||v===''?'-':(m.unit==='time'?mmss(v):(m.unit==='in'&&v>0&&!m.noPlus?'+':'')+(+v).toLocaleString(undefined,{maximumFractionDigits:1})+(m.unit==='time'?'':' '+m.unit));
 
 /* ---------- seed data (examples) ---------- */
+const PROD=!!window.MUSO_PROD;
+const SKEY=PROD?'muso-live':'muso-momentum';
 const S = {
   role:'trainer', ttab:'clients', ctab:'home', trainerId:'t1', rosterAll:false, sel:'c1', me:'c1',
   trainers:{
@@ -564,11 +573,13 @@ mk('c6','Mo Haddad','MH',{disc:{gender:'Male',figure:'M',zones:[{z:'lowerBack',i
   why:'Golf 18 holes without my hips locking up.',
   metrics:[{k:'reach',label:'Sit and reach',unit:'in',base:-4,cur:0.5,target:1,dir:1,hist:[-4,-3,-2,-1,0,0.5]}]});
 S.clients.c5.flag=null;
+if(PROD){ S.clients={}; S.groups={}; S.sel=null; S.me=null; }
 
 /* per-viewer convenience only: remember role and tab */
 S.role='client'; S.onboarded=false; S.started=false;
-try{ const p=JSON.parse(localStorage.getItem('muso-momentum')||'null'); if(p&&p.v===4){ ['clients','lb','circuit','stretch','onboarded','started','me','sel','role','ttab','ctab','trainerId','disc'].forEach(k=>{ if(p[k]!==undefined) S[k]=p[k]; }); if(!S.clients[S.me]) S.me=Object.keys(S.clients)[0]; } }catch(e){}
+try{ const p=JSON.parse(localStorage.getItem(SKEY)||'null'); if(p&&p.v===4){ ['clients','lb','circuit','stretch','onboarded','started','me','sel','role','ttab','ctab','trainerId','disc'].forEach(k=>{ if(p[k]!==undefined) S[k]=p[k]; }); if(!S.clients[S.me]) S.me=Object.keys(S.clients)[0]; } }catch(e){}
 function saveUI(){ persist(); }
+if(PROD){ S.role=location.hash==='#trainer'?'trainer':'client'; if(S.role==='trainer'){ S.clients={}; S.ttab='clients'; S.sel=null; } window.addEventListener('hashchange',()=>location.reload()); document.body.classList.add('prod'); }
 
 /* ---------- feedback ---------- */
 function toast(msg){ const t=document.createElement('div'); t.className='toast'; t.textContent=msg; $('toasts').appendChild(t); setTimeout(()=>t.remove(),3200); }
@@ -668,27 +679,115 @@ function header(){
 document.querySelectorAll('[data-role]').forEach(b=>b.onclick=()=>{S.role=b.dataset.role; saveUI(); render();});
 $('tabs').onclick=e=>{const b=e.target.closest('[data-tab]'); if(!b) return; if(S.role==='trainer') S.ttab=b.dataset.tab; else S.ctab=b.dataset.tab; saveUI(); render(); window.scrollTo({top:0});};
 
+/* ---------- live mode: database, trainer sign-in, realtime ---------- */
+const TRAINER_EMAIL='shane@muso-ventures.com';
+const CFG=window.MUSO_CONFIG||{};
+const AUTH={user:null,ready:!PROD,err:'',busy:false};
+let SB=null, CH=null, pendingRender=false, syncTimer=null;
+const lastSent={};
+function sbReady(){ return !!(window.supabase&&CFG.supabaseUrl&&CFG.supabaseAnonKey&&!/YOUR_/.test(CFG.supabaseUrl+CFG.supabaseAnonKey)); }
+function sb(){ if(!SB&&sbReady()) SB=window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey,{auth:{persistSession:true,autoRefreshToken:true}}); return SB; }
+function ser(c){ return JSON.stringify(c,(k,v)=>k.charAt(0)==='_'?undefined:v); }
+function fromRow(r){ const d=r.data||{}; return Object.assign({trainers:['t1'],second:[],metrics:[],badges:[],awards:[],circ:[],disc:{},xp:0,streak:0,sessions:0,stretchN:0},d,{id:r.id,name:d.name||r.name}); }
+function safeRender(){ const a=document.activeElement; if(a&&$('view').contains(a)&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)){ pendingRender=true; return; } render(); }
+document.addEventListener('focusout',()=>{ if(pendingRender){ setTimeout(()=>{ const a=document.activeElement; if(!(a&&$('view').contains(a)&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))){ pendingRender=false; render(); } },60); } });
+async function sendClient(c){
+  const client=sb();
+  if(!client){ toast("Online sign-up isn't switched on yet. Please let your trainer know."); return false; }
+  try{ const {error}=await client.from('clients').insert({id:c.id,name:c.name,data:JSON.parse(ser(c))}); if(error) throw error; lastSent[c.id]=ser(c); return true; }
+  catch(e){ toast("Couldn't send your answers. Check your connection and try again."); return false; }
+}
+async function loadRemote(){
+  const client=sb(); if(!client) return;
+  const {data,error}=await client.from('clients').select('id,name,data,created_at').order('created_at',{ascending:false});
+  if(error){ AUTH.err="Signed in, but couldn't load clients. Check the database setup."; return; }
+  S.clients={}; (data||[]).forEach(r=>{ const c=fromRow(r); S.clients[c.id]=c; lastSent[c.id]=ser(c); });
+  if(CH) client.removeChannel(CH);
+  CH=client.channel('clients-live').on('postgres_changes',{event:'*',schema:'public',table:'clients'},p=>{
+    if(p.eventType==='DELETE'){ const id=p.old&&p.old.id; if(id&&S.clients[id]){ delete S.clients[id]; delete lastSent[id]; if(S.sel===id){ S.sel=null; if(S.ttab==='dash') S.ttab='clients'; } safeRender(); } return; }
+    const r=p.new; if(!r||!r.id) return; const c=fromRow(r), s=ser(c);
+    if(lastSent[r.id]===s) return;
+    const isNew=!S.clients[r.id]; S.clients[r.id]=c; lastSent[r.id]=s;
+    if(isNew) toast(`New intake: ${c.name}`);
+    safeRender();
+  }).subscribe();
+}
+function scheduleSync(){ clearTimeout(syncTimer); syncTimer=setTimeout(syncDirty,700); }
+async function syncDirty(){
+  const client=sb(); if(!client||!AUTH.user) return;
+  for(const c of Object.values(S.clients)){
+    const s=ser(c); if(lastSent[c.id]===s) continue;
+    lastSent[c.id]=s;
+    try{ const {error}=await client.from('clients').update({name:c.name,data:JSON.parse(s),updated_at:new Date().toISOString()}).eq('id',c.id); if(error) throw error; }
+    catch(e){ delete lastSent[c.id]; toast("Couldn't save the latest change. It will retry on your next edit."); }
+  }
+}
+async function initAuth(){
+  const client=sb();
+  if(!client){ AUTH.ready=true; render(); return; }
+  try{ const {data}=await client.auth.getSession(); const u=data&&data.session&&data.session.user;
+    if(u&&String(u.email).toLowerCase()===TRAINER_EMAIL){ AUTH.user=u; await loadRemote(); }
+    else if(u){ await client.auth.signOut(); }
+  }catch(e){}
+  AUTH.ready=true; render();
+}
+async function doLogin(){
+  const client=sb(); if(!client) return;
+  const email=($('lg-email').value||'').trim().toLowerCase(), pw=$('lg-pw').value||'';
+  if(!email||!pw){ AUTH.err='Enter your email and password.'; render(); return; }
+  if(email!==TRAINER_EMAIL){ AUTH.err='This sign-in is for the MUSO Fitness trainer account only.'; render(); return; }
+  AUTH.busy=true; AUTH.err=''; render();
+  try{ const {data,error}=await client.auth.signInWithPassword({email,password:pw});
+    if(error||!data||!data.user){ AUTH.err=error&&/invalid/i.test(error.message)?'Wrong email or password.':(error&&error.message)||'Sign-in failed.'; }
+    else { AUTH.user=data.user; await loadRemote(); S.ttab='clients'; }
+  }catch(e){ AUTH.err='Sign-in failed. Check your connection.'; }
+  AUTH.busy=false; render();
+}
+async function doSignOut(){ try{ const c=sb(); if(c){ if(CH) c.removeChannel(CH); await c.auth.signOut(); } }catch(e){} location.hash=''; location.reload(); }
+async function deleteRemote(id){
+  const client=sb(); if(!client) return;
+  try{ const {error}=await client.from('clients').delete().eq('id',id); if(error) throw error; delete S.clients[id]; delete lastSent[id]; S.sel=null; S.ttab='clients'; toast('Client deleted'); render(); }
+  catch(e){ toast("Couldn't delete. Try again."); }
+}
+function tLogin(){
+  const ready=sbReady();
+  return `<section class="login"><div class="card">
+    <div class="bigck" style="background:var(--surface-2)">${ic('lock')}</div>
+    <h1 class="pt sm" style="text-align:center;margin-inline:auto">Trainer sign-in</h1>
+    <p class="ps" style="text-align:center;margin-inline:auto">Client profiles and discovery answers. MUSO Fitness trainer only.</p>
+    ${!ready?`<div class="alert">The client database isn't connected yet. Sign-in turns on once setup is finished.</div>`:!AUTH.ready?`<p class="note" style="text-align:center">Checking your session</p>`:`
+    <form id="login" class="qs" style="gap:12px" novalidate>
+      <div class="f"><label for="lg-email">Email</label><input class="inp" id="lg-email" type="email" autocomplete="username" value="${TRAINER_EMAIL}"></div>
+      <div class="f"><label for="lg-pw">Password</label><input class="inp" id="lg-pw" type="password" autocomplete="current-password"></div>
+      ${AUTH.err?`<div class="alert">${esc(AUTH.err)}</div>`:''}
+      <button class="btn pri lg" type="submit" style="justify-content:center"${AUTH.busy?' disabled':''}>${AUTH.busy?'Signing in':'Sign in'}</button>
+    </form>`}
+    <p class="note" style="text-align:center"><a href="./" style="color:var(--dim)">Back to the client app</a></p>
+  </div></section>`;
+}
+
 function cWelcome(){
   return `<section class="welcome">
     <div class="wl-copy"><span class="pill gold">MUSO Fitness · Personal Training</span>
       <h1 class="pt big">Your training journey starts here</h1>
       <p class="ps">Tell us your goals, your schedule, and how your body feels. We'll turn it into a starting program, set your targets, and track every win along the way.</p>
-      <div class="row"><button class="btn pri lg" data-start="1">Start discovery ${ic('up','style="transform:rotate(90deg)"')}</button><button class="btn ghost" data-role-switch="trainer">I'm a trainer</button></div>
-      <p class="note">About 10 minutes. Your answers stay on this device in the test version.</p></div>
+      <div class="row"><button class="btn pri lg" data-start="1">Start discovery ${ic('up','style="transform:rotate(90deg)"')}</button>${PROD?'':'<button class="btn ghost" data-role-switch="trainer">I\'m a trainer</button>'}</div>
+      <p class="note">${PROD?'About 10 minutes. Your answers go straight to your trainer, Shane Musseau.':'About 10 minutes. Your answers stay on this device in the test version.'}</p></div>
     <div class="wl-tiles">
       <div class="stat"><div class="si">${ic('clip')}</div><b>1. Discovery</b><span>Goals, body focus map, health</span></div>
       <div class="stat"><div class="si">${ic('target')}</div><b>2. Your plan</b><span>Targets and a weekly blueprint</span></div>
       <div class="stat"><div class="si">${ic('bolt')}</div><b>3. Level up</b><span>XP, badges, guided timers</span></div>
     </div></section>`;
 }
-function resetLine(){ return `<p class="resetline">Test build · <button type="button" data-reset="1">Reset test data</button>${S.role==='client'&&S.onboarded?' · <button type="button" data-newclient="1">Start as a new client</button>':''}</p>`; }
+function resetLine(){ if(PROD) return S.role==='trainer'?(AUTH.user?`<p class="resetline">Signed in as ${esc(AUTH.user.email)} · <button type="button" data-signout="1">Sign out</button></p>`:''):`<p class="resetline">Your answers go only to your MUSO Fitness trainer.</p>`; return `<p class="resetline">Test build · <button type="button" data-reset="1">Reset test data</button>${S.role==='client'&&S.onboarded?' · <button type="button" data-newclient="1">Start as a new client</button>':''}</p>`; }
 function onboarding(){ return S.role==='client'&&!S.onboarded; }
-function persist(){ try{ const keep={v:4,clients:S.clients,lb:S.lb,circuit:S.circuit,stretch:S.stretch,onboarded:!!S.onboarded,started:!!S.started,me:S.me,sel:S.sel,role:S.role,ttab:S.ttab,ctab:S.ctab,trainerId:S.trainerId,disc:S.disc};
-  localStorage.setItem('muso-momentum',JSON.stringify(keep,(k,v)=>k==='_fresh'?undefined:v)); }catch(e){} }
+function persist(){ if(PROD&&S.role==='trainer'){ if(AUTH.user) scheduleSync(); return; } try{ const keep={v:4,clients:S.clients,lb:S.lb,circuit:S.circuit,stretch:S.stretch,onboarded:!!S.onboarded,started:!!S.started,me:S.me,sel:S.sel,role:S.role,ttab:S.ttab,ctab:S.ctab,trainerId:S.trainerId,disc:S.disc};
+  localStorage.setItem(SKEY,JSON.stringify(keep,(k,v)=>k==='_fresh'?undefined:v)); }catch(e){} }
 function render(){
   header();
   const v=$('view'), ob=onboarding();
-  $('tabs').hidden=ob; $('who').style.visibility=ob?'hidden':'';
+  if(PROD&&S.role==='trainer'&&!AUTH.user){ $('tabs').hidden=true; $('who').style.visibility='hidden'; v.innerHTML=tLogin(); return; }
+  $('tabs').hidden=ob; $('who').style.visibility=(ob||(PROD&&S.role==='client'))?'hidden':'';
   if(ob){ v.innerHTML=(S.started?tDiscovery():cWelcome())+resetLine(); persist(); return; }
   if(S.role==='trainer') v.innerHTML=({clients:tClients,dash:tDash,discovery:tDiscovery,programs:tPrograms,leaderboard:tBoard})[S.ttab]();
   else v.innerHTML=({home:cHome,circuit:cCircuit,stretch:cStretch,progress:cProgress,leaderboard:cBoard})[S.ctab]();
@@ -774,7 +873,7 @@ function tDash(){
   const dleft=daysUntil(x.eventDate), mhr=age?220-age:null;
   const baseRows=[['Weight',x.weight?x.weight+' lb':''],['Waist',x.waist?x.waist+' in':''],['Resting HR',x.rhr?x.rhr+' bpm':''],['Chest',x.mChest?x.mChest+' in':''],['Hips',x.mHips?x.mHips+' in':''],['Thigh',x.mThigh?x.mThigh+' in':''],['Upper arm',x.mArm?x.mArm+' in':''],['Calf',x.mCalf?x.mCalf+' in':''],['Push-ups',x.pushups],['Plank',x.plank?x.plank+' sec':''],['Sit and reach',x.reach!=null&&x.reach!==''?x.reach+' in':''],['1-mile',x.mile],['Squats in 60 sec',x.squats],['Inverted rows',x.rows],['Calf raises',x.calf]];
   return `<div class="dash">
-  <div class="row" style="justify-content:space-between;margin-top:6px"><button class="btn ghost sm" data-back="1">← All clients</button><div class="row"><button class="btn sm" data-copysum="1">${ic('clip')} Copy full profile</button><button class="btn sm" data-dlsum="1">Download JSON</button></div></div>
+  <div class="row" style="justify-content:space-between;margin-top:6px"><button class="btn ghost sm" data-back="1">← All clients</button><div class="row"><button class="btn sm" data-copysum="1">${ic('clip')} Copy full profile</button><button class="btn sm" data-dlsum="1">Download JSON</button>${PROD?'<button class="btn sm ghost" data-delc="1">Delete client</button>':''}</div></div>
   <div class="card dhead">
     <div class="av lg" data-h="${hue(c.ini)}">${esc(c.ini)}</div>
     <div style="min-width:0;flex:1">
@@ -1013,6 +1112,8 @@ function tDiscovery(){
   if(!Array.isArray(d.gyms)) d.gyms=[];
   const opt=(key,vals,multi)=>`<div class="opts">${vals.map(v=>{const on=multi?(d[key]||[]).includes(v):String(d[key])===String(v);return `<button type="button" class="opt${on?' on':''}" data-opt="${key}" data-v="${esc(v)}" data-multi="${multi?1:0}">${esc(v)}</button>`}).join('')}</div>`;
   const inp=(key,label,ph,type='text',hint='',mode='')=>`<div class="f"><label for="d-${key}">${label}</label><input class="inp" id="d-${key}" data-dk="${key}" type="${type}" ${mode?`inputmode="${mode}"`:type==='number'?'inputmode="decimal"':''} ${type==='email'?'autocomplete="email"':type==='tel'?'autocomplete="tel"':''} placeholder="${esc(ph)}" value="${esc(d[key])}">${hint?`<span class="hint">${hint}</span>`:''}</div>`;
+  const fmtBlock=()=>`<div class="fg"><div class="f"><span class="fl">Training format</span>${opt('format',['1:1','Small group'])}</div>
+      ${d.format==='Small group'?`<div class="f"><label for="d-group">Group</label><select class="inp" id="d-group" data-dk="group">${Object.values(S.groups).map(g=>`<option value="${g.id}"${d.group===g.id?' selected':''}>${esc(g.name)} · ${esc(g.when)}</option>`).join('')}</select></div>`:'<div></div>'}</div>`;
   const ta=(key,label,ph)=>`<div class="f"><label for="d-${key}">${label}</label><textarea class="inp" id="d-${key}" data-dk="${key}" placeholder="${esc(ph)}">${esc(d[key])}</textarea></div>`;
   const sec=(t,sub)=>`<div><div style="font-weight:800;font-size:15px;letter-spacing:-.3px">${t}</div>${sub?`<div class="muted" style="font-size:12.5px;margin-top:2px">${sub}</div>`:''}</div>`;
   let body='';
@@ -1030,8 +1131,7 @@ function tDiscovery(){
     <div class="fg"><div class="f"><label for="d-dob">Date of birth</label><input class="inp" type="date" id="d-dob" data-dk="dob" value="${esc(d.dob)}"><span class="hint" id="age-hint">${age?`Age ${age}`:'Used to set heart-rate zones'}</span></div>
       <div class="f"><span class="fl">Sex</span>${opt('gender',['Female','Male','Prefer not to say'])}<span class="hint">Sets the figure on the body map.</span></div></div>
     <div class="fg3">${inp('heightFt','Height (ft)','5','number')}${inp('heightIn','Height (in)','8','number')}${inp('occupation','Occupation','What you do for work')}</div>
-    <div class="fg"><div class="f"><span class="fl">Training format</span>${opt('format',['1:1','Small group'])}</div>
-      ${d.format==='Small group'?`<div class="f"><label for="d-group">Group</label><select class="inp" id="d-group" data-dk="group">${Object.values(S.groups).map(g=>`<option value="${g.id}"${d.group===g.id?' selected':''}>${esc(g.name)} · ${esc(g.when)}</option>`).join('')}</select></div>`:'<div></div>'}</div>
+    ${Object.keys(S.groups).length?fmtBlock():''}
     ${Object.keys(S.trainers).length===1?`<div class="f"><span class="fl">${CM?'Your trainer':'Trainer'}</span><span class="tchip" style="align-self:flex-start"><span class="av t">${S.trainers.t1.ini}</span>${esc(S.trainers.t1.name)}</span></div>`:`<div class="f"><span class="fl">${CM?'Choose your trainer':'Trainers'}</span><div class="opts">${Object.values(S.trainers).map(t=>`<button type="button" class="opt${d.trainers.includes(t.id)?' on':''}" data-tr="${t.id}">${esc(t.name)}</button>`).join('')}</div><span class="hint">${CM?'Pick one or more. You can change this later.':'Pick more than one to co-train this client.'}</span></div>`}
     <div class="f"><span class="fl">How did you hear about us?</span>${opt('referral',['Friend or member','Instagram','Google','Walked by','Other'])}</div></div>`; }
   if(st===2) body=`<div class="qs">${sec('How we reach you')}
@@ -1103,7 +1203,7 @@ function tDiscovery(){
   <div class="${CM?'onb':'grid'}"><div class="col"><div class="card">
     <div class="stepper">${STEPS.map((s,i)=>`<button type="button" class="stp${i<st?' done':''}${i===st?' cur':''}" data-step="${i}"><i></i>${i+1}. ${s}</button>`).join('')}</div>
     ${body}
-    <div class="formfoot"><div class="row">${st>0?`<button class="btn ghost" data-dstep="-1">Back</button>`:''}<button class="btn ghost" data-sample="1">${CM?'Demo: fill sample':'Fill sample answers'}</button></div>
+    <div class="formfoot"><div class="row">${st>0?`<button class="btn ghost" data-dstep="-1">Back</button>`:''}${PROD?'':`<button class="btn ghost" data-sample="1">${CM?'Demo: fill sample':'Fill sample answers'}</button>`}</div>
       <div class="row">${!canNext&&why?`<span class="muted" style="font-size:12px" id="next-why">${why}</span>`:''}${st<STEPS.length-1?`<button class="btn pri" data-dstep="1" id="next-btn"${canNext?'':' disabled'}>Next: ${STEPS[st+1]}</button>`:`<button class="btn pri" data-create="1">${ic('check')} ${CM?'Start my program':'Create client'}</button>`}</div></div>
   </div></div>
   ${CM?'</div>':`<div class="col"><div class="card"><div class="ch"><h2>Why discovery first</h2></div>
@@ -1114,13 +1214,15 @@ function tDiscovery(){
   </div></div></div>`}`;
 }
 const PROFILE_KEYS=['gyms','pushups','plank','reach','mile','rhr','squats','rows','calf','zones','figure','mChest','mHips','mThigh','mArm','mCalf','waist','weight','dob','gender','heightFt','heightIn','occupation','referral','email','phone','contactPref','city','emergName','emergRel','emergPhone','eventDate','parq','conditions','meds','protect','injuries','cleared','activity','curDays','types','exp','equip','enjoy','avoid','days','len','time','sleep','stress','work','meals','water','diet','alcohol','nutHelp','notes','last','win','now'];
-function createFromDisc(){
-  const d=S.disc.data, p=genPlan(d), id='c'+Date.now().toString(36);
+async function createFromDisc(){
+  const d=S.disc.data, p=genPlan(d), id=PROD&&window.crypto&&crypto.randomUUID?crypto.randomUUID():'c'+Date.now().toString(36);
   const ini=d.name.trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
   const disc={}; PROFILE_KEYS.forEach(k=>disc[k]=Array.isArray(d[k])?[...d[k]]:d[k]); disc.age=ageOf(d.dob); disc.level=p.level; disc.notesPlan=p.notes; disc.submittedAt=Date.now(); disc.plan={level:p.level,intensity:p.intensity,week:p.week,miles:p.miles,zplan:p.zplan,notes:p.notes};
   mk(id,d.name.trim(),ini,{trainers:[...d.trainers],group:d.format==='Small group'?d.group:null,goal:d.goal,second:[...d.second],why:d.win||d.now,since:'Oct 2026',xp:0,streak:0,sessions:0,badges:[],metrics:p.metrics,disc,
     flag:parqFlag(d)?'Needs doctor clearance':null});
   const c=S.clients[id]; c.badges.push('spark'); c._fresh='spark'; c.xp=200; c.newIntake=S.role==='client';
+  if(PROD){ const btn=document.querySelector('[data-create]'); if(btn){ btn.disabled=true; btn.textContent='Sending your answers'; }
+    const ok=await sendClient(c); if(!ok){ delete S.clients[id]; if(btn){ btn.disabled=false; } render(); return; } }
   if(S.role==='client'){ S.disc={step:0,data:null}; S.me=id; S.sel=id; S.onboarded=true; S.started=false; S.ctab='home'; render(); window.scrollTo({top:0});
     $('overlay').innerHTML=`<div class="lvlup" role="dialog" aria-label="Welcome"><div class="box"><div class="phase" style="background:var(--olive);color:#fff">Badge unlocked</div><div class="big">${ic('bolt')}</div><h3>First Spark</h3><p>Your program is built. ${p.level} level, ${d.days} days a week. ${parqFlag(d)?'Bring a doctor\'s note to your first session.':'Your trainer will reach out to book your first assessment.'}</p><button class="btn pri" id="lvlok">See my program</button></div></div>`;
     $('lvlok').onclick=()=>{$('overlay').innerHTML=''}; return; }
@@ -1329,12 +1431,15 @@ function cBoard(){
 function bind(){ /* delegated below */ }
 function addGym(){ const el=$('gym-new'), v=(el&&el.value||'').trim().slice(0,80); if(!v){ if(el) el.focus(); return; } const d=S.disc.data; if(!Array.isArray(d.gyms)) d.gyms=[]; if(d.gyms.some(g=>g.n.toLowerCase()===v.toLowerCase())){ toast('Already on the list'); return; } d.gyms.push({n:v,s:'Train here now'}); render(); const n=$('gym-new'); if(n) n.focus(); }
 function toggleZone(id){ const d=S.disc.data; if(!d) return; const i=d.zones.findIndex(z=>z.z===id); if(i>=0) d.zones.splice(i,1); else d.zones.push({z:id,i:defaultIntent(d.goal)}); render(); }
+$('view').addEventListener('submit',e=>{ if(e.target&&e.target.id==='login'){ e.preventDefault(); doLogin(); } });
 $('view').addEventListener('keydown',e=>{ if(e.target&&e.target.id==='gym-new'&&e.key==='Enter'){ e.preventDefault(); addGym(); return; } });
 $('view').addEventListener('keydown',e=>{ const g=e.target.closest&&e.target.closest('.zg'); if(!g||(e.key!=='Enter'&&e.key!==' ')) return; e.preventDefault(); const id=g.dataset.zone, inBack=!!g.closest('figure:last-child'); toggleZone(id); const figs=document.querySelectorAll('.bmap figure'); const f=figs[inBack?1:0]; const el=f&&f.querySelector(`.zg[data-zone="${id}"]`); if(el) el.focus(); });
 $('view').addEventListener('click',e=>{
   const zg=e.target.closest&&e.target.closest('.zg'); if(zg){ toggleZone(zg.dataset.zone); return; }
   const t=e.target.closest('button'); if(!t) return; const ds=t.dataset;
   if(ds.ztog){ toggleZone(ds.ztog); return; }
+  if(ds.signout){ doSignOut(); return; }
+  if(ds.delc){ if(t.dataset.armed){ deleteRemote(S.sel); } else { t.dataset.armed='1'; t.textContent='Tap again to delete for good'; setTimeout(()=>{ if(t.isConnected){ delete t.dataset.armed; t.textContent='Delete client'; } },4000); } return; }
   if(ds.gadd){ addGym(); return; }
   if(ds.grm!=null){ S.disc.data.gyms.splice(+ds.grm,1); render(); return; }
   if(ds.gs!=null){ const g=S.disc.data.gyms[+ds.gs]; if(g) g.s=ds.v; render(); return; }
@@ -1350,7 +1455,7 @@ $('view').addEventListener('click',e=>{
   if(ds.sel){ S.sel=ds.sel; render(); return; }
   if(ds.start){ S.started=true; S.disc={step:0,data:null}; render(); window.scrollTo({top:0}); return; }
   if(ds.roleSwitch){ S.role=ds.roleSwitch; render(); return; }
-  if(ds.reset){ if(t.dataset.armed){ try{localStorage.removeItem('muso-momentum')}catch(err){} location.reload(); } else { t.dataset.armed='1'; t.textContent='Tap again to erase everything'; setTimeout(()=>{ if(t.isConnected){ delete t.dataset.armed; t.textContent='Reset test data'; } },4000); } return; }
+  if(ds.reset){ if(t.dataset.armed){ try{localStorage.removeItem(SKEY)}catch(err){} location.reload(); } else { t.dataset.armed='1'; t.textContent='Tap again to erase everything'; setTimeout(()=>{ if(t.isConnected){ delete t.dataset.armed; t.textContent='Reset test data'; } },4000); } return; }
   if(ds.newclient){ S.onboarded=false; S.started=false; S.disc={step:0,data:null}; render(); window.scrollTo({top:0}); return; }
   if(ds.rall!=null){ S.rosterAll=ds.rall==='1'; render(); return; }
   if(ds.go){ S.ttab=ds.go; saveUI(); render(); return; }
@@ -1414,6 +1519,7 @@ $('view').addEventListener('change',e=>{ const t=e.target; if(t.dataset.pg||t.da
 document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'&&TM.running) tmTick(); });
 
 render();
+if(PROD&&S.role==='trainer') initAuth();
 </script>
 
 </body>

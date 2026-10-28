@@ -4,7 +4,33 @@ Personal training app from **MUSO Fitness**, built by MUSO VENTURES.
 
 New clients start with a discovery form. Their answers become a starting program with target metrics, a weekly blueprint, milestones, and program adjustments for injuries, health flags, equipment, and recovery. From there they train with guided timers and level up with XP and badges.
 
-## What's in the test build
+## Two versions
+
+| Version | URL | Who it's for | Data |
+|---|---|---|---|
+| **Live** | https://muso-ventures.github.io/muso-momentum/ | New clients | Saved to the MUSO Fitness Supabase database. Trainer dashboard updates in real time. |
+| **Trainer sign-in** | https://muso-ventures.github.io/muso-momentum/#trainer | Shane only (shane@muso-ventures.com) | Email and password checked by Supabase. Nothing secret is stored in this repo. |
+| **Test backup** | https://muso-ventures.github.io/muso-momentum/test/ | Demos and testing | Example clients, demo fill, open trainer view. Stays on the device. |
+
+The live version has no demo fill, no example clients, and no trainer toggle. Clients only see discovery and their own program.
+
+## Live setup (one time)
+
+1. Create a free project at supabase.com.
+2. SQL Editor > New query > paste `supabase-setup.sql` > Run.
+3. Authentication > Users > Add user > Create new user: `shane@muso-ventures.com` with your trainer password, and tick Auto Confirm.
+4. Authentication > Sign In / Providers: turn off "Allow new users to sign up".
+5. Project Settings > API: copy the Project URL and the `anon` public key into `config.js`.
+
+Until step 5 is done, the live site shows clients a "sign-up isn't switched on yet" message and keeps their answers on screen.
+
+## Data notes
+
+- Clients can submit a discovery form. Only the trainer account can read, edit, or delete client records (row-level security in `supabase-setup.sql`).
+- Trainer edits (metric logs, awards, co-trainers) save back to the database automatically.
+- Client activity after sign-up (circuits, stretches, XP) stays on the client's own device for now.
+
+## Features
 
 **Client side**
 - Welcome screen that leads into an 8-step discovery: profile, goals with the body focus map, contact and emergency contact, a 7-question health screen, training background, lifestyle and nutrition, optional baseline numbers, and the generated plan.
